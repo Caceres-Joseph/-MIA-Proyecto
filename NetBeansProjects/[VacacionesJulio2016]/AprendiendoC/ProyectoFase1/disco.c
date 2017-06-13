@@ -30,6 +30,8 @@ bloqueMBR leerMBR(char ruta[sizeChar]);
 void actualizarMBR(bloqueMBR mbr, char ruta[sizeChar]);
 
 
+
+void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], char fit[sizeChar]);
 void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char unit, char type, char fit[sizeChar], char delete[sizeChar], int add);
 void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[sizeChar]);
 
@@ -131,6 +133,78 @@ void errorDeEspacio() {
 /**************************************************************
  * DISCO                                                    *** 
  **************************************************************/
+void reporteEBR(char ruta[sizeChar]) {
+    printf("\t................................................EBR.............................................\n");
+    bloqueMBR mbr = leerMBR(ruta);
+    //buscando la posicion de la partición logica
+    partition particiones[4];
+    particiones[0] = mbr.mbr_partition_1;
+    particiones[1] = mbr.mbr_partition_2;
+    particiones[2] = mbr.mbr_partition_3;
+    particiones[3] = mbr.mbr_partition_4;
+
+    bool hayExtendida = false;
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (particiones[i].part_type = 'e') {
+            hayExtendida = true;
+            break;
+        }
+    }
+    int inicio = 0;
+    int tamano = 0;
+    int espacioDisponible = 0;
+    if (hayExtendida == true) {
+        printf("\tLa partición extendida es=%i|Nombre: %s\n", i + 1, particiones[i].part_name);
+        inicio = particiones[i].part_start;
+        tamano = particiones[i].part_size;
+        espacioDisponible = inicio + tamano;
+        FILE *f;
+        if ((f = fopen(ruta, "r+b")) == NULL) {
+            printf("\t[ERROR]error al abrir el disco!\n");
+        } else {
+            bloqueEBR ebr;
+            printf("\tinicio = %i\n", inicio);
+            fseek(f, inicio, SEEK_SET);
+            fread(&ebr, sizeof (bloqueEBR), 1, f);
+            if (ebr.part_fit == 'b' || ebr.part_fit == 'f' || ebr.part_fit == 'w') {
+                //Si se encontró el primer ERB
+                printf("\tNombre:%s\n", ebr.part_name);
+                printf("\t\tStatus:%c", ebr.part_status);
+                printf("\tAjuste:%c", ebr. part_fit);
+                printf("\tInicio:%i", ebr.part_start);
+                printf("\tTamaño:%i", ebr.part_size);
+                printf("\tPosSiguiente:%i \n", ebr.part_next);
+
+                int siguiente = ebr.part_next;
+                while (true) {
+                    bloqueEBR aux_ebr;
+                    fseek(f, siguiente, SEEK_SET);
+                    fread(&aux_ebr, sizeof (bloqueEBR), 1, f);
+                    if (aux_ebr.part_fit == 'b' || aux_ebr.part_fit == 'f' || aux_ebr.part_fit == 'w') {
+                        printf("\tNombre:%s\n", aux_ebr.part_name);
+                        printf("\t\tStatus:%c ", aux_ebr.part_status);
+                        printf("\tAjuste:%c", aux_ebr. part_fit);
+                        printf("\tInicio:%i", aux_ebr.part_start);
+                        printf("\tTamaño:%i ", aux_ebr.part_size);
+                        printf("\tPosSiguiente:%i \n", aux_ebr.part_next);
+                        siguiente = aux_ebr.part_next;
+                        //es que si hay siguiente
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                puts("\t\t No se encontró el primer EBR");
+            }
+            fclose(f);
+        }
+    } else {
+        puts("/t[ERROR]No se ha creado una partición extendida");
+    }
+    printf("\t................................................................................................\n");
+}
+
 void reporteMBR(char ruta[sizeChar]) {
     printf("\t................................................MBR.............................................\n");
     bloqueMBR mbr = leerMBR(ruta);
@@ -232,6 +306,11 @@ void fdisk(int size, char ruta[sizeChar], char name[sizeChar], char unit, char t
     if (borrar != 0)
         borrar = strncmp("full", delete, sizeChar);
 
+    if (unit == 'k')
+        size = size * 1000;
+    else if (unit == 'm')
+        size = size * 1000000;
+
     if (borrar == 0) {//eliminar particion
         puts("\t        .........Eliminando partición........");
 
@@ -268,9 +347,9 @@ void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[siz
 
 
         printf("\t\tEliminando la Particion%i, Nombre=%s\n", i + 1, particiones[i].part_name);
-       
+
         if (strncmp("fast", delete, sizeof ("fast")) == 0) {
-             printf("\t\tTipo =fast, size %d\n", sizeof (delete));
+            printf("\t\tTipo =fast, size %d\n", sizeof (delete));
             //elimminacion fast
             particiones[i].part_size = 0;
             particiones[i].part_start = 0;
@@ -281,7 +360,7 @@ void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[siz
 
 
         } else {
-             printf("\t\tTipo =full, size %d\n", sizeof (delete));
+            printf("\t\tTipo =full, size %d\n", sizeof (delete));
             //elimminacion full
             FILE *f;
             if ((f = fopen(ruta, "r+b")) == NULL) {
@@ -294,7 +373,7 @@ void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[siz
                 for (i = 0; i < particiones[i].part_size; i++) {
                     fwrite(&vacio, 1, 1, f);
                 }
-                fclose(f);               
+                fclose(f);
             }
 
             particiones[i].part_size = 0;
@@ -323,8 +402,111 @@ void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[siz
 
 }
 
+void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], char fit[sizeChar]) {
+    bloqueMBR mbr = leerMBR(ruta);
+    //buscando la posicion de la partición logica
+    partition particiones[4];
+    particiones[0] = mbr.mbr_partition_1;
+    particiones[1] = mbr.mbr_partition_2;
+    particiones[2] = mbr.mbr_partition_3;
+    particiones[3] = mbr.mbr_partition_4;
+
+    bool hayExtendida = false;
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (particiones[i].part_type = 'e') {
+            hayExtendida = true;
+            break;
+        }
+    }
+
+    int inicio = 0;
+    int tamano = 0;
+    int espacioDisponible = 0;
+    if (hayExtendida == true) {//Hay que agregar la particion extendida antes de la anterior
+
+        printf("\tLa partición extendida es Particion_%i\n", i + 1);
+        inicio = particiones[i].part_start;
+        tamano = particiones[i].part_size;
+        espacioDisponible = inicio + tamano;
+        FILE *f;
+        if ((f = fopen(ruta, "r+b")) == NULL) {
+            printf("\t[ERROR]error al abrir el disco!\n");
+        } else {
+            bloqueEBR ebr;
+            printf("\tInicio = %i\n", inicio);
+            printf("\tTamaño=%i\n",tamano);
+            
+            fseek(f, inicio, SEEK_SET);
+            fread(&ebr, sizeof (bloqueEBR), 1, f);
+            if (ebr.part_fit == 'b' || ebr.part_fit == 'f' || ebr.part_fit == 'w') {
+                bloqueEBR bloqueAnterior;
+                bloqueAnterior = ebr;
+                int siguiente = ebr.part_next;
+                bloqueEBR aux_ebr;
+                while (true) {
+                    fseek(f, siguiente, SEEK_SET);
+                    fread(&aux_ebr, sizeof (bloqueEBR), 1, f);
+                    if (aux_ebr.part_fit == 'b' || aux_ebr.part_fit == 'f' || aux_ebr.part_fit == 'w') {
+                        siguiente = aux_ebr.part_next;
+                        bloqueAnterior = aux_ebr;
+                        //es que si hay siguiente
+                    } else {//es el ultimo bloque
+                        //agregar la direccion al bloque anterior
+                        aux_ebr.part_start = bloqueAnterior.part_start + sizeof (bloqueEBR) + bloqueAnterior.part_size + 1;
+                        fseek(f, aux_ebr.part_start, SEEK_SET);
+                        aux_ebr.part_status = '0';
+                        aux_ebr.part_fit = fit[0];
+                        //aux_ebr.part_start = bloqueAnterior->part_start+sizeof(bloqueEBR)+bloqueAnterior->part_size+1;
+                        aux_ebr.part_size = size;
+                        aux_ebr.part_next = -1;
+                        //  printf("\tEl nombre que le voy a poner es = %s\n", name);
+
+                        strcpy(aux_ebr.part_name, name);
+                        bloqueAnterior.part_next = aux_ebr.part_start;
+                        if (aux_ebr.part_start + aux_ebr.part_size > tamano) {
+                            printf("\t[ERROR]El tamaño supera el espacio disponible en la partición extendida.\n");
+                        } else {
+                            fwrite(&aux_ebr, sizeof (bloqueEBR), 1, f);
+                            fseek(f, bloqueAnterior.part_start, SEEK_SET);
+                            fwrite(&bloqueAnterior, sizeof (bloqueEBR), 1, f);
+                            puts("\tSe creo la partición logica");
+                        }
+
+
+                        break;
+                    }
+                }
+                //leer el mbr
+            } else {
+                fseek(f, inicio, SEEK_SET);
+                //crear el mbr
+                ebr.part_status = '0';
+                ebr.part_fit = fit[0];
+                ebr.part_start = inicio;
+                ebr.part_size = size;
+                ebr.part_next = -1;
+                strcpy(ebr.part_name, name);
+                fwrite(&ebr, sizeof (bloqueEBR), 1, f);
+                puts("\tSe escribió el primer EBR");
+            }
+            fclose(f);
+        }
+
+    } else {
+        puts("/t[ERROR]No se ha creado una partición extendida");
+    }
+    printf("\t.....................................................\n");
+}
+
 void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char unit, char type, char fit[sizeChar], char delete[sizeChar], int add) {
     puts("\t             .......Creando partición.......");
+    if (type == 'l') {
+
+        crearParticionLogica(size, ruta, name, fit);
+        return;
+    }
+
     bloqueMBR mbr = leerMBR(ruta);
     /*
             estadoDeParticiones(mbr);
@@ -523,10 +705,7 @@ void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char uni
 
 
 
-        if (unit == 'k')
-            tamanoDeParticion = tamanoDeParticion * 1000;
-        else if (unit == 'm')
-            tamanoDeParticion = tamanoDeParticion * 1000000;
+
         printf("\t\tTamaño de la partición a crear %iB\n", tamanoDeParticion);
         printf("\t\tSe escribirá en la particion No. %i\n", particionSeleccionada);
         switch (particionSeleccionada) {

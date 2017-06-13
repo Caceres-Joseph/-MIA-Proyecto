@@ -471,11 +471,14 @@ void MKD2(int tama, char ruta[sizeChar], char disco[sizeChar]);
 void errorSintactico();
 void errorSemantico(char mensaje[sizeChar * 3]);
 void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]);
+
 void inicializarVariablesFdisk();
+void inicializarVariablesMnt();
+
 void RKD();
 void FKD();
 void FKD2();
-
+void MNT();
 
 ///MKDisk
 int tamaS = 0;
@@ -496,17 +499,28 @@ char fdisk_fit[sizeChar] = "";
 char fdisk_delete[sizeChar] = "";
 int fdisk_add = 0;
 
+
+//mount
+char mnt_nombre[sizeChar] = "";
+char mnt_ruta[sizeChar] = "";
+char mnt_id[sizeChar] = "";
+
 void inicializarVariablesFdisk() {
     fdisk_size = 0;
-    strcpy(fdisk_path, "");//fdisk_path = "";
-    strcpy(fdisk_name, "");//fdisk_name = "";
+    strcpy(fdisk_path, ""); //fdisk_path = "";
+    strcpy(fdisk_name, ""); //fdisk_name = "";
     fdisk_unit = ' ';
     fdisk_type = ' ';
-    strcpy(fdisk_fit, "");//fdisk_fit = "";
-    strcpy(fdisk_delete, "");//fdisk_delete = "";
+    strcpy(fdisk_fit, ""); //fdisk_fit = "";
+    strcpy(fdisk_delete, ""); //fdisk_delete = "";
     fdisk_add = 0;
 }
-
+void inicializarVariablesMnt() {
+      strcpy(mnt_nombre, "");
+      strcpy(mnt_ruta, "");
+      strcpy(mnt_id, "");
+      
+}
 void analizadorSintactico() {
     S();
 
@@ -545,18 +559,34 @@ void S() {
             printf("\t.........................Fdisk........................\n");
             FKD();
             if (!ocurrioError) {
-                
+
                 fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
                 inicializarVariablesFdisk();
             }
             inicializarVariablesFdisk();
+        } else if (strcmpi("fdisk", tok.valor)) {
+
+            printf("\t.........................Mount........................\n");
+            FKD();
+            if (!ocurrioError) {
+
+                fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
+                inicializarVariablesFdisk();
+            }
+            printf("\t.......................................................\n");
+            inicializarVariablesFdisk();
+            
         } else if (strcmpi("exit", tok.valor)) {
             abort();
-        } else if (strcmpi("reporte", tok.valor)) {
-            token tok= pop(listaDeTokens);
+        } else if (strcmpi("reportembr", tok.valor)) {
+            token tok = pop(listaDeTokens);
+            //reporteMBR(tok.valor);
             reporteMBR(tok.valor);
-        }
-        else {
+        } else if (strcmpi("reporteebr", tok.valor)) {
+            token tok = pop(listaDeTokens);
+            //reporteMBR(tok.valor);
+            reporteEBR(tok.valor);
+        } else {
             errorSintactico();
         }
         //////////agregar un salir
@@ -570,6 +600,35 @@ void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]) {
     strcpy(rutaS, ruta);
 }
 
+void MNT() {
+    pop(listaDeTokens); //$
+    token tok = pop(listaDeTokens); //path
+    toMinusc(tok.valor);
+    if (strcmpi("path", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(mnt_ruta, cad.valor);
+            MNT();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("name", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(mnt_nombre, cad.valor);
+             MNT();
+            return;
+        } else {
+            errorSintactico();
+        }
+    }
+}
+
 void FKD() {
     pop(listaDeTokens); //$
     token tok = pop(listaDeTokens); //path
@@ -579,7 +638,7 @@ void FKD() {
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);
         if (strcmpi("cadena", cad.tipo)) {
-            strcpy(fdisk_path,cad.valor);
+            strcpy(fdisk_path, cad.valor);
             FKD2();
             return;
         } else {
@@ -607,7 +666,7 @@ void FKD() {
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);
         if (strcmpi("id", cad.tipo)) {
-            strcpy(fdisk_name,cad.valor);
+            strcpy(fdisk_name, cad.valor);
             FKD2();
             return;
         } else {
@@ -673,15 +732,15 @@ void FKD() {
         if (strcmpi("letras", cad.tipo)) {
 
             if (strcmpi("bf", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD2();
                 return;
             } else if (strcmpi("ff", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD2();
                 return;
             } else if (strcmpi("wf", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD2();
                 return;
             } else {
@@ -696,11 +755,11 @@ void FKD() {
         token cad = pop(listaDeTokens);
         if (strcmpi("letras", cad.tipo)) {
             if (strcmpi("fast", cad.valor)) {
-                strcpy(fdisk_delete,cad.valor);
+                strcpy(fdisk_delete, cad.valor);
                 FKD2();
                 return;
             } else if (strcmpi("full", cad.valor)) {
-                strcpy(fdisk_delete,cad.valor);
+                strcpy(fdisk_delete, cad.valor);
                 FKD2();
                 return;
             } else {
@@ -742,7 +801,7 @@ void FKD2() {
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);
         if (strcmpi("cadena", cad.tipo)) {
-            strcpy(fdisk_path,cad.valor);
+            strcpy(fdisk_path, cad.valor);
             FKD();
             return;
         } else {
@@ -771,18 +830,20 @@ void FKD2() {
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);
         if (strcmpi("id", cad.tipo)) {
-            strcpy(fdisk_name,cad.valor);
+            strcpy(fdisk_name, cad.valor);
             FKD();
             return;
-        } if (strcmpi("letras", cad.tipo)) {
-            strcpy(fdisk_name,cad.valor);
+        }
+        if (strcmpi("letras", cad.tipo)) {
+            strcpy(fdisk_name, cad.valor);
             FKD();
             return;
-        }  if (strcmpi("cadena", cad.tipo)) {
-            strcpy(fdisk_name,cad.valor);
+        }
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(fdisk_name, cad.valor);
             FKD();
             return;
-        }  else {
+        } else {
             errorSintactico();
         }
     } else if (strcmpi("unit", tok.valor)) {
@@ -845,15 +906,15 @@ void FKD2() {
         if (strcmpi("letras", cad.tipo)) {
 
             if (strcmpi("bf", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD();
                 return;
             } else if (strcmpi("ff", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD();
                 return;
             } else if (strcmpi("wf", cad.valor)) {
-                strcpy(fdisk_fit,cad.valor);
+                strcpy(fdisk_fit, cad.valor);
                 FKD();
                 return;
             } else {
@@ -868,11 +929,11 @@ void FKD2() {
         token cad = pop(listaDeTokens);
         if (strcmpi("letras", cad.tipo)) {
             if (strcmpi("fast", cad.valor)) {
-                strcpy(fdisk_delete,cad.valor);
+                strcpy(fdisk_delete, cad.valor);
                 FKD();
                 return;
             } else if (strcmpi("full", cad.valor)) {
-               strcpy(fdisk_delete,cad.valor);
+                strcpy(fdisk_delete, cad.valor);
                 FKD();
                 return;
             } else {
@@ -1077,6 +1138,7 @@ void errorSemantico(char mensaje[sizeChar * 3]) {
     printf(">>>[Error Semantico]%s\n", mensaje);
     ocurrioError = true;
 }
+//hola
 
 /**************************************************************
  **FUNCIONES CADENA                                           ** 

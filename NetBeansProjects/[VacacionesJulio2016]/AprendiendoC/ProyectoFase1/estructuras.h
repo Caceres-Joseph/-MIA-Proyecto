@@ -30,7 +30,7 @@ typedef struct Nodo {
 
 
 
-////////////////////////////////////////////////////
+
 
 typedef struct Lista {
     Nodo* cabeza;
@@ -46,7 +46,7 @@ typedef struct {
     char part_name[16];
 } partition;
 
-
+///------------EBR----------------------
 typedef struct {
     char part_status;
     char part_fit;
@@ -55,17 +55,25 @@ typedef struct {
     int part_next;
     char part_name[16];
 } bloqueEBR;
+///------------fin EBR----------------------
 
-typedef struct NodoEBR {
-     bloqueEBR ebr;
-    struct NodoEBR* siguiente;
-} NodoEBR;
+///------------Mount  ----------------------
+typedef struct {
+    char mnt_nombre[sizeChar];
+    char mnt_ruta[sizeChar];
+    char mnt_id[sizeChar];
+}mount;
 
-typedef struct ListaEBR {
-    NodoEBR* cabeza;
-} ListaEBR;
+typedef struct{
+    mount mnt;
+    struct mnt_nodo* siguiente;
+}mnt_nodo;
 
-////////////////////////////////////////////////////
+typedef struct{
+    mnt_nodo* siguiente;
+}mnt_lista;
+
+///------------fin Mount----------------------
 
 
 typedef struct {/*Contiene la estructura del MBR*/
@@ -78,7 +86,6 @@ typedef struct {/*Contiene la estructura del MBR*/
     partition mbr_partition_4;
 
 } bloqueMBR;
-
 
 #endif
 

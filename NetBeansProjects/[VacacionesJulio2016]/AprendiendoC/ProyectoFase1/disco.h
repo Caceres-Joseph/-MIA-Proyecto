@@ -14,4 +14,5 @@ void fdisk(int size, char path[sizeChar], char name[sizeChar], char unit, char t
 
 //reportes
 void reporteMBR(char ruta[sizeChar]) ;
+void reporteEBR(char ruta[sizeChar]) ;
 #endif
