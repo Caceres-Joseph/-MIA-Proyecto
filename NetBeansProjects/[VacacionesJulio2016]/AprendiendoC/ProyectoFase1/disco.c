@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <time.h>
 #include "disco.h"
 #include "estructuras.h"
@@ -34,6 +35,17 @@ void actualizarMBR(bloqueMBR mbr, char ruta[sizeChar]);
 void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], char fit[sizeChar]);
 void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char unit, char type, char fit[sizeChar], char delete[sizeChar], int add);
 void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[sizeChar]);
+partition devolverParticion(char ruta[sizeChar], char nombre[sizeChar]);
+bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]) ;
+
+
+
+//Lista
+mnt_nodo* mntCrearNodo(partition particion, bloqueEBR logica, char ruta[sizeChar]);
+void mntInsertarAlFinal(mnt_lista* lista, partition particion, bloqueEBR logica, char ruta[sizeChar]);
+void mntPush(partition particion, bloqueEBR logica, char ruta[sizeChar]);
+char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]);
+char numeroDeDisco(mnt_lista*lista, char letra);
 
 void errorDeEspacio();
 
@@ -131,7 +143,7 @@ void errorDeEspacio() {
 }
 
 /**************************************************************
- * DISCO                                                    *** 
+ * REPORTES                                                 *** 
  **************************************************************/
 void reporteEBR(char ruta[sizeChar]) {
     printf("\t................................................EBR.............................................\n");
@@ -234,6 +246,161 @@ void reporteMBR(char ruta[sizeChar]) {
 
 }
 
+
+
+
+/**************************************************************
+ * Lista MOUNT                                               *** 
+ **************************************************************/
+
+mnt_lista* listaDeParticiones;
+
+mnt_nodo* mntCrearNodo(partition particion, bloqueEBR logica, char ruta[sizeChar]) {
+    mnt_nodo* nodo = (mnt_nodo*) malloc(sizeof (mnt_nodo));
+    nodo->mnt_particion = particion;
+    nodo->mnt_ebr = logica;
+    strcpy(nodo->mnt_ruta, ruta);
+    char resultado = letraDeDisco(listaDeParticiones, ruta);
+    strcpy(nodo->mnt_id, "vd00"); //aquí tengo que recorrere la lista para colocarle el id que se necesita
+    nodo->mnt_id[2] = resultado;
+    nodo->mnt_id[3]=numeroDeDisco(listaDeParticiones,resultado);
+    
+    nodo->siguiente = NULL;
+    return nodo;
+}
+
+void mntInsertarAlFinal(mnt_lista* lista, partition particion, bloqueEBR logica, char ruta[sizeChar]) {
+    mnt_nodo* nodo = mntCrearNodo(particion, logica, ruta);
+    if (lista->cabeza == NULL) {
+        //Lista vacia
+        lista->cabeza = nodo;
+    } else {
+        //Lista llena
+        mnt_nodo* puntero = lista->cabeza;
+        while (puntero->siguiente) {
+            puntero = puntero->siguiente;
+        }
+        puntero->siguiente = nodo;
+    }
+}
+
+void mntPush(partition particion, bloqueEBR logica, char ruta[sizeChar]) {
+    mntInsertarAlFinal(listaDeParticiones, particion, logica, ruta);
+}
+
+void inicializarListaMount() {
+    listaDeParticiones = (mnt_lista*) malloc(sizeof (mnt_lista)); //inicializando las listas
+    listaDeParticiones->cabeza = NULL;
+}
+
+void imprimirListaDeParticionesMontadas() {
+    mnt_lista* lista= listaDeParticiones;
+    mnt_nodo* puntero = lista->cabeza;
+    puts("\t\t.......................Particiones Montadas........................");
+    while (puntero) {
+        if (puntero->mnt_particion.part_fit == 'b' || puntero->mnt_particion.part_fit == 'f' || puntero->mnt_particion.part_fit == 'w') {//si no hay primaria, buscar en la secundaria
+            printf("\t\tNombreParticion-> %s\tTipo->P\tId-> %s\tRuta->%s\n", puntero->mnt_particion.part_name, puntero->mnt_id, puntero->mnt_ruta);
+        } else {
+            printf("\t\tNombreParticion-> %s\tTipo->L\tId-> %s\tRuta->%s\n", puntero->mnt_ebr.part_name, puntero->mnt_id, puntero->mnt_ruta);
+        }
+        puntero = puntero->siguiente;
+    }
+    puts("\t\t...................................................................");
+
+}
+
+char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]) {
+    mnt_nodo*puntero = lista->cabeza;
+    char letraTemporal = 'a';
+    int retorno = 0;
+    if (lista->cabeza == NULL) {
+        return 'a';
+    }
+    while (puntero) {
+        retorno = strncmp(ruta, puntero->mnt_ruta, sizeChar);
+        if (retorno == 0) {
+            char reto= puntero->mnt_id[2];
+            
+            return reto;
+            //si lo encontro retorna 0
+        } else {
+/*
+            int resul = strncmp(letraTemporal, puntero->mnt_id[2],1);
+*/
+            
+            int resul= strcmp(&letraTemporal,&puntero->mnt_id[2]);
+            if((puntero->mnt_id[2])>letraTemporal)
+                letraTemporal= puntero->mnt_id[2];//se va buscando el mas grande
+            
+        }
+        puntero = puntero->siguiente;
+    };
+
+    if (retorno == 0) {
+        return 'a';
+        
+    } else {
+        return letraTemporal+1;
+    }
+
+}
+
+char numeroDeDisco(mnt_lista*lista, char letra) {
+    mnt_nodo*puntero = lista->cabeza;
+    char letraTemporal = '1';
+    int retorno = 1;
+    if (lista->cabeza == NULL) {
+        return '1';
+    }
+    while (puntero) {
+        if(letra==puntero->mnt_id[2])
+            retorno=0;
+        //retorno= strcmp(&letra,&puntero->mnt_id[2]);//retorna 0 si son iguales
+        if (retorno == 0) {
+            
+            if((puntero->mnt_id[3])>letraTemporal)
+                letraTemporal= puntero->mnt_id[3];//se va buscando el mas grande
+           
+            //si lo encontro retorna 0
+        } 
+        puntero = puntero->siguiente;
+    };
+
+    if (retorno != 0) {
+        return '1';
+    } else {
+        return letraTemporal+1;
+    }
+
+}
+
+/**************************************************************
+ * COMANDOS                                                 *** 
+ **************************************************************/
+void mkfs(char id[sizeChar], char unit, char type[sizeChar],  int add){
+    printf("\tId= %s\n",id);
+    printf("\tUnidad= %c\n",unit);
+    printf("\tTipo= %s\n",type);
+    printf("\tAdd= %i\n",add);
+}
+
+void mountn(char ruta[sizeChar], char nombre[sizeChar]) {
+    partition part = devolverParticion(ruta, nombre); //si se econtro en primaria o secundaria
+    bloqueEBR eb;
+    printf("\tMontando: %s \n",nombre);
+    if (part.part_fit == 'b' || part.part_fit == 'f' || part.part_fit == 'w') {//si no hay primaria, buscar en la secundaria
+        mntPush(part, eb, ruta); //se ingresa la particion a la lista.
+    } else {
+        eb = devolverLogica(ruta, nombre);
+        if (eb.part_fit == 'b' || eb.part_fit == 'f' || eb.part_fit == 'w')
+            mntPush(part, eb, ruta);
+        else
+            puts("\t[ERROR]No se encontró la particion");
+    }
+    
+    //imprimirListaDeParticionesMontadas();
+}
+
 void mkdisk(int size, char ruta[50], char nombre[50]) {
 
     strcat(ruta, nombre);
@@ -321,6 +488,12 @@ void fdisk(int size, char ruta[sizeChar], char name[sizeChar], char unit, char t
         crearParticion(size, ruta, name, unit, type, fit, delete, add);
     }
 }
+
+/**************************************************************
+ * PARTICIONES                                              *** 
+ **************************************************************/
+
+
 
 void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[sizeChar]) {
     bloqueMBR mbr = leerMBR(ruta);
@@ -435,8 +608,8 @@ void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], ch
         } else {
             bloqueEBR ebr;
             printf("\tInicio = %i\n", inicio);
-            printf("\tTamaño=%i\n",tamano);
-            
+            printf("\tTamaño=%i\n", tamano);
+
             fseek(f, inicio, SEEK_SET);
             fread(&ebr, sizeof (bloqueEBR), 1, f);
             if (ebr.part_fit == 'b' || ebr.part_fit == 'f' || ebr.part_fit == 'w') {
@@ -751,6 +924,141 @@ void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char uni
     printf("\t.....................................................\n");
 }
 
+bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]) {
+    bloqueMBR mbr = leerMBR(ruta);
+    //buscando la posicion de la partición logica
+    partition particiones[4];
+    particiones[0] = mbr.mbr_partition_1;
+    particiones[1] = mbr.mbr_partition_2;
+    particiones[2] = mbr.mbr_partition_3;
+    particiones[3] = mbr.mbr_partition_4;
+
+    bool hayExtendida = false;
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (particiones[i].part_type = 'e') {
+            hayExtendida = true;
+            break;
+        }
+    }
+    int inicio = 0;
+    int tamano = 0;
+    int espacioDisponible = 0;
+    bool seEncontroLogica = false;
+
+    if (hayExtendida == true) {
+        //printf("\tLa partición extendida es=%i|Nombre: %s\n", i + 1, particiones[i].part_name);
+        inicio = particiones[i].part_start;
+        tamano = particiones[i].part_size;
+        espacioDisponible = inicio + tamano;
+        FILE *f;
+        if ((f = fopen(ruta, "r+b")) == NULL) {
+            printf("\t[ERROR]error al abrir el disco!\n");
+        } else {
+            bloqueEBR ebr;
+            //printf("\tinicio = %i\n", inicio);
+            fseek(f, inicio, SEEK_SET);
+            fread(&ebr, sizeof (bloqueEBR), 1, f);
+            if (ebr.part_fit == 'b' || ebr.part_fit == 'f' || ebr.part_fit == 'w') {
+                //Si se encontró el primer ERB
+                int result = strncmp(ebr.part_name, nombre, sizeChar);
+                if (result == 0) {
+                    seEncontroLogica = true;
+                    return ebr;
+                }
+                int siguiente = ebr.part_next;
+
+                while (true) {
+                    bloqueEBR aux_ebr;
+                    fseek(f, siguiente, SEEK_SET);
+                    fread(&aux_ebr, sizeof (bloqueEBR), 1, f);
+                    if (aux_ebr.part_fit == 'b' || aux_ebr.part_fit == 'f' || aux_ebr.part_fit == 'w') {
+                        int resultado = strncmp(aux_ebr.part_name, nombre, sizeChar);
+                        if (resultado == 0) {
+                            seEncontroLogica = true;
+                            return aux_ebr;
+                            break;
+                        } else {
+                            siguiente = aux_ebr.part_next;
+                        }
+                        //es que si hay siguiente
+                    } else {
+                        break;
+                    }
+                }
+            }
+            //else NO hay primer EBR
+            fclose(f);
+        }
+    }
+    if (seEncontroLogica == false) {
+        bloqueEBR retor;
+        return retor;
+    }
+    /*
+        //////////////////////////////////////////////
+        //buscando dentro de una particion extendida//
+        //////////////////////////////////////////////
+         bloqueMBR mbr = leerMBR(ruta);
+        //buscando la posicion de la partición logica
+        partition particiones[4];
+        particiones[0] = mbr.mbr_partition_1;
+        particiones[1] = mbr.mbr_partition_2;
+        particiones[2] = mbr.mbr_partition_3;
+        particiones[3] = mbr.mbr_partition_4;
+
+        bool seEncontroLaParticion = false;
+        int i;
+        for (i = 0; i < 4; i++) {
+            if (particiones[i].part_type = 'e') {
+                seEncontroLaParticion = true;
+                break;
+            }
+        }
+        //ahora hay que buscar dentro de la partición extendida que se encontro para retornar el ebr
+    
+    
+    
+        if (seEncontroLaParticion == true) {
+            return particiones[i];
+        } else {
+            //no se encontro la partición
+            partition retorno;
+            return retorno;
+        }
+     */
+}
+
+partition devolverParticion(char ruta[sizeChar], char nombre[sizeChar]) {//hay que buscar dentro de las particiones extendidas
+    bloqueMBR mbr = leerMBR(ruta);
+    //buscando la posicion de la partición logica
+    partition particiones[4];
+    particiones[0] = mbr.mbr_partition_1;
+    particiones[1] = mbr.mbr_partition_2;
+    particiones[2] = mbr.mbr_partition_3;
+    particiones[3] = mbr.mbr_partition_4;
+
+    bool seEncontroLaParticion = false;
+    int o;
+    for (o = 0; o < 4; o++) {
+        int resultado = strncmp(particiones[o].part_name, nombre, sizeChar);
+        if (resultado == 0) {
+            if (particiones[o].part_type == 'p') {
+                seEncontroLaParticion = true;
+                return particiones[o];
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (seEncontroLaParticion == false) {
+        partition reto;
+        return reto;
+    }
+
+
+}
 /*
  * 
          // Otra forma de buscar espacio es recorrere todas las particiones

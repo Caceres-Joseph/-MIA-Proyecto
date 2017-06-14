@@ -79,7 +79,6 @@ void InsertarAlFinal(Lista* lista, token* token) {
         }
         puntero->siguiente = nodo;
     }
-
 }
 
 token pop(Lista* lista) {
@@ -505,6 +504,13 @@ char mnt_nombre[sizeChar] = "";
 char mnt_ruta[sizeChar] = "";
 char mnt_id[sizeChar] = "";
 
+
+//mkfs
+char mkfs_id[sizeChar] = "";
+char mkfs_type[sizeChar] = "";
+int mkfs_add = 0;
+char mkfs_unit = ' ';
+
 void inicializarVariablesFdisk() {
     fdisk_size = 0;
     strcpy(fdisk_path, ""); //fdisk_path = "";
@@ -515,12 +521,22 @@ void inicializarVariablesFdisk() {
     strcpy(fdisk_delete, ""); //fdisk_delete = "";
     fdisk_add = 0;
 }
-void inicializarVariablesMnt() {
-      strcpy(mnt_nombre, "");
-      strcpy(mnt_ruta, "");
-      strcpy(mnt_id, "");
-      
+
+void inicializarVariablesMkfs() {
+    mkfs_add = 0;
+    mkfs_unit = ' ';
+    strcpy(mkfs_id, "");
+    strcpy(mkfs_type, "");
+
 }
+
+void inicializarVariablesMnt() {
+    strcpy(mnt_nombre, "");
+    strcpy(mnt_ruta, "");
+    strcpy(mnt_id, "");
+
+}
+
 void analizadorSintactico() {
     S();
 
@@ -559,23 +575,42 @@ void S() {
             printf("\t.........................Fdisk........................\n");
             FKD();
             if (!ocurrioError) {
-
                 fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
-                inicializarVariablesFdisk();
             }
             inicializarVariablesFdisk();
-        } else if (strcmpi("fdisk", tok.valor)) {
+        } else if (strcmpi("mount", tok.valor)) {
 
-            printf("\t.........................Mount........................\n");
-            FKD();
+
+            MNT();
+
             if (!ocurrioError) {
+                int retorno = strncmp("", mnt_nombre, sizeChar);
+                if (retorno == 0) {//solo viene mount
+                    imprimirListaDeParticionesMontadas();
+                } else {
+                    printf("\t.........................Mount........................\n");
 
-                fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
-                inicializarVariablesFdisk();
+                    mountn(mnt_ruta, mnt_nombre);
+
+                    printf("\t.......................................................\n");
+                }
             }
+
+
+
+            inicializarVariablesMnt();
+
+        } else if (strcmpi("mkfs", tok.valor)) {
+            inicializarVariablesMkfs();
+            printf("\t.........................MKFS..........................\n");
+            MKFS();
+
+            if (!ocurrioError) {
+                mkfs(mkfs_id, mkfs_unit, mkfs_type, mkfs_add);
+            }
+
             printf("\t.......................................................\n");
-            inicializarVariablesFdisk();
-            
+
         } else if (strcmpi("exit", tok.valor)) {
             abort();
         } else if (strcmpi("reportembr", tok.valor)) {
@@ -600,6 +635,97 @@ void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]) {
     strcpy(rutaS, ruta);
 }
 
+/**************************************************************
+ **No TERMINALES                                             ** 
+ **************************************************************/
+
+void MKFS() {
+    pop(listaDeTokens); //$
+    token tok = pop(listaDeTokens); //path
+    toMinusc(tok.valor);
+
+    if (strcmpi("id", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(mkfs_id, cad.valor);
+            MKFS();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("letras", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(mkfs_id, cad.valor);
+            MKFS();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("type", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("letras", cad.tipo)) {
+            strcpy(mkfs_type, cad.valor);
+            MKFS();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("add", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("negativo", cad.tipo)) {
+            int numero;
+            sscanf(cad.valor, "%i", &numero);
+            mkfs_add = numero;
+            MKFS();
+            return;
+        } else if (strcmpi("numero", cad.tipo)) {
+            int numero;
+            sscanf(cad.valor, "%i", &numero);
+            mkfs_add = numero;
+            MKFS();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("unit", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("letras", cad.tipo)) {
+
+            char aux = cad.valor[0]; //el primer elemento
+            aux = tolower(aux);
+            //strncmp(string1, string2, sizeChar);
+            if (aux == 'b') {
+                mkfs_unit = aux;
+                MKFS();
+                return;
+            } else if (aux == 'k') {
+                mkfs_unit = aux;
+                MKFS();
+                return;
+            } else if (aux == 'm') {
+                mkfs_unit = aux;
+                MKFS();
+                return;
+            } else {
+                errorSemantico("Ingrese una unidad correcta");
+            }
+        } else {
+            errorSintactico();
+        }
+    }
+}
+
 void MNT() {
     pop(listaDeTokens); //$
     token tok = pop(listaDeTokens); //path
@@ -621,7 +747,7 @@ void MNT() {
         token cad = pop(listaDeTokens);
         if (strcmpi("id", cad.tipo)) {
             strcpy(mnt_nombre, cad.valor);
-             MNT();
+            MNT();
             return;
         } else {
             errorSintactico();
@@ -1130,12 +1256,12 @@ void RKD() {
 }
 
 void errorSintactico() {
-    puts(">>>[Error Sintactico]");
+    puts("\t[Error Sintactico]");
     ocurrioError = true;
 }
 
 void errorSemantico(char mensaje[sizeChar * 3]) {
-    printf(">>>[Error Semantico]%s\n", mensaje);
+    printf("\t[Error Semantico]%s\n", mensaje);
     ocurrioError = true;
 }
 //hola

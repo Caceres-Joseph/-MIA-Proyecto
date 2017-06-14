@@ -16,10 +16,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "funciones.h"
+#include "disco.h"
 /*
  * 
  */
 int main(int argc, char** argv) {
+    inicializarListaMount();
     while (1) {
         consola();
     }
