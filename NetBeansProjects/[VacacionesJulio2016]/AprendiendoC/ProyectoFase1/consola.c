@@ -575,7 +575,9 @@ void S() {
             printf("\t.........................Fdisk........................\n");
             FKD();
             if (!ocurrioError) {
+                printf("le estoy mandando = %i\n",fdisk_size);
                 fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
+                
             }
             inicializarVariablesFdisk();
         } else if (strcmpi("mount", tok.valor)) {
@@ -778,6 +780,7 @@ void FKD() {
             int numero;
             sscanf(cad.valor, "%i", &numero);
             if (numero > 0) {
+                printf("numero=%i\n",numero);
                 fdisk_size = numero;
                 FKD2();
                 return;
@@ -941,6 +944,7 @@ void FKD2() {
             int numero;
             sscanf(cad.valor, "%i", &numero);
             if (numero > 0) {
+                printf("numero=%i\n",numero);
                 fdisk_size = numero;
                 FKD();
                 return;

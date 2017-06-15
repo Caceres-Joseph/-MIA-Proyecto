@@ -4,12 +4,13 @@
  * and open the template in the editor.
  */
 
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <stdio.h>
 #include <time.h>
 #include "disco.h"
 #include "estructuras.h"
@@ -19,7 +20,7 @@
 
 
 bool fdisk_ocurrioError = false;
-
+char metodoDeColocacionExtendida = 'w';
 /**************************************************************
  * Prototipos                                                *** 
  **************************************************************/
@@ -36,7 +37,7 @@ void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], ch
 void crearParticion(int size, char ruta[sizeChar], char name[sizeChar], char unit, char type, char fit[sizeChar], char delete[sizeChar], int add);
 void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[sizeChar]);
 partition devolverParticion(char ruta[sizeChar], char nombre[sizeChar]);
-bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]) ;
+bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]);
 
 
 
@@ -46,6 +47,8 @@ void mntInsertarAlFinal(mnt_lista* lista, partition particion, bloqueEBR logica,
 void mntPush(partition particion, bloqueEBR logica, char ruta[sizeChar]);
 char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]);
 char numeroDeDisco(mnt_lista*lista, char letra);
+mnt_nodo retornarNodoMount(char ids[sizeChar]);
+
 
 void errorDeEspacio();
 
@@ -263,8 +266,8 @@ mnt_nodo* mntCrearNodo(partition particion, bloqueEBR logica, char ruta[sizeChar
     char resultado = letraDeDisco(listaDeParticiones, ruta);
     strcpy(nodo->mnt_id, "vd00"); //aquí tengo que recorrere la lista para colocarle el id que se necesita
     nodo->mnt_id[2] = resultado;
-    nodo->mnt_id[3]=numeroDeDisco(listaDeParticiones,resultado);
-    
+    nodo->mnt_id[3] = numeroDeDisco(listaDeParticiones, resultado);
+
     nodo->siguiente = NULL;
     return nodo;
 }
@@ -294,7 +297,7 @@ void inicializarListaMount() {
 }
 
 void imprimirListaDeParticionesMontadas() {
-    mnt_lista* lista= listaDeParticiones;
+    mnt_lista* lista = listaDeParticiones;
     mnt_nodo* puntero = lista->cabeza;
     puts("\t\t.......................Particiones Montadas........................");
     while (puntero) {
@@ -309,6 +312,23 @@ void imprimirListaDeParticionesMontadas() {
 
 }
 
+mnt_nodo retornarNodoMount(char ids[sizeChar]) {
+    mnt_lista* lista = listaDeParticiones;
+    mnt_nodo* puntero = lista->cabeza;
+    int retorno;
+
+    while (puntero) {
+        retorno = strncmp(ids, puntero->mnt_id, sizeChar);
+        if (retorno == 0)//lo encontró
+            return *puntero;
+        puntero = puntero->siguiente;
+    }
+    puts("\t[ERROR]No se encontró ese id");
+    mnt_nodo re;
+    strcpy(re.mnt_ruta, "");
+    return re;
+}
+
 char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]) {
     mnt_nodo*puntero = lista->cabeza;
     char letraTemporal = 'a';
@@ -319,28 +339,28 @@ char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]) {
     while (puntero) {
         retorno = strncmp(ruta, puntero->mnt_ruta, sizeChar);
         if (retorno == 0) {
-            char reto= puntero->mnt_id[2];
-            
+            char reto = puntero->mnt_id[2];
+
             return reto;
             //si lo encontro retorna 0
         } else {
-/*
-            int resul = strncmp(letraTemporal, puntero->mnt_id[2],1);
-*/
-            
-            int resul= strcmp(&letraTemporal,&puntero->mnt_id[2]);
-            if((puntero->mnt_id[2])>letraTemporal)
-                letraTemporal= puntero->mnt_id[2];//se va buscando el mas grande
-            
+            /*
+                        int resul = strncmp(letraTemporal, puntero->mnt_id[2],1);
+             */
+
+            int resul = strcmp(&letraTemporal, &puntero->mnt_id[2]);
+            if ((puntero->mnt_id[2]) > letraTemporal)
+                letraTemporal = puntero->mnt_id[2]; //se va buscando el mas grande
+
         }
         puntero = puntero->siguiente;
     };
 
     if (retorno == 0) {
         return 'a';
-        
+
     } else {
-        return letraTemporal+1;
+        return letraTemporal + 1;
     }
 
 }
@@ -353,41 +373,164 @@ char numeroDeDisco(mnt_lista*lista, char letra) {
         return '1';
     }
     while (puntero) {
-        if(letra==puntero->mnt_id[2])
-            retorno=0;
+        if (letra == puntero->mnt_id[2])
+            retorno = 0;
         //retorno= strcmp(&letra,&puntero->mnt_id[2]);//retorna 0 si son iguales
         if (retorno == 0) {
-            
-            if((puntero->mnt_id[3])>letraTemporal)
-                letraTemporal= puntero->mnt_id[3];//se va buscando el mas grande
-           
+
+            if ((puntero->mnt_id[3]) > letraTemporal)
+                letraTemporal = puntero->mnt_id[3]; //se va buscando el mas grande
+
             //si lo encontro retorna 0
-        } 
+        }
         puntero = puntero->siguiente;
     };
 
     if (retorno != 0) {
         return '1';
     } else {
-        return letraTemporal+1;
+        return letraTemporal + 1;
     }
 
 }
 
+//double floor(double x);
+
 /**************************************************************
  * COMANDOS                                                 *** 
  **************************************************************/
-void mkfs(char id[sizeChar], char unit, char type[sizeChar],  int add){
-    printf("\tId= %s\n",id);
-    printf("\tUnidad= %c\n",unit);
-    printf("\tTipo= %s\n",type);
-    printf("\tAdd= %i\n",add);
+void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
+
+    printf("\tId= %s\n", id);
+    printf("\tUnidad= %c\n", unit);
+    printf("\tTipo= %s\n", type);
+    printf("\tAdd= %i\n", add);
+
+    if (unit == ' ')//por si no viene unidad
+        unit = 'k';
+    int retorno = 1;
+    retorno = strncmp(type, "", sizeChar);
+    if (retorno == 0)
+        strcpy(type, "full");
+
+
+    /*
+     * Fn parametros opcionales        
+     */
+
+    if (unit == 'k')
+        add = add * kilobyte;
+    else if (unit == 'm')
+        add = add * megabyte;
+
+    if (add != 0) {
+        puts("\tAgregar o restar");
+    } else {//formatear normal
+        mnt_nodo particion = retornarNodoMount(id);
+        int re = strncmp(particion.mnt_ruta, "", sizeChar);
+        if (re == 0)
+            return;
+
+        ////////los datos necesarios
+        int part_inicio = 0;
+        int part_tamano = 0;
+        char part_colocacion = ' ';
+
+        if (particion.mnt_particion.part_fit == 'b' || particion.mnt_particion.part_fit == 'f' || particion.mnt_particion.part_fit == 'w') {//es primaria
+            part_inicio = particion.mnt_particion.part_start;
+            part_tamano = particion.mnt_particion.part_size;
+            part_colocacion = particion.mnt_particion.part_type;
+        } else {//del ebr
+            part_inicio = particion.mnt_ebr.part_start;
+            part_tamano = particion.mnt_ebr.part_size;
+            part_colocacion = metodoDeColocacionExtendida;
+        }
+
+        double partta = (double) part_tamano;
+        double nu;
+        nu = (partta - sizeof (superBloque)) / (4.0 + 3.0 * 64.0 + sizeof (inodo) + sizeof (journalie));
+        printf("\tSuperBloque=%i| Inodo = %i|Journalie=%i\n", sizeof (superBloque), sizeof (inodo), sizeof (journalie));
+        printf("\tTamaño de la partición=%i\n", part_tamano);
+        printf("\tN en double=%f\n", nu);
+        int n = (int) nu;
+        printf("\tN en entero = %i\n", n);
+        int disk = sizeof (superBloque) + n + n * sizeof (journalie) + 3 * n + n * sizeof (inodo) + 3 * n * sizeof (bloqueCarpeta);
+        printf("\tEl tamaño que da el formato es= %i\n", disk);
+
+        //
+
+
+        //JOURNALING
+    }
+
+}
+
+superBloque sb_inicializar(int n) {//inicializo las variables del superbloque
+
+    superBloque sb;
+
+    sb.s_inodes_count = n;
+    sb.s_blocks_count=3*n;
+    
+    sb.s_free_blocks_counts=n;
+    sb.s_free_inodes_count=3*n;
+    
+    sb.s_inode_size=sizeof(inodo);
+    sb.s_block_size=sizeof(bloqueArchivo);
+    printf("\tel tamaño del bloqu archivos= %i, carpetas= %i, apuntadores %i\n",sizeof(bloqueArchivo),sizeof(bloqueCarpeta),sizeof(bloqueApuntador));
+    
+    
+    sb.s_block_start;
+    sb.s_bm_block_start;
+    sb.s_bm_inode_start;
+    sb.s_first_blo;
+    sb.s_first_ino;
+    sb.s_inode_start;
+    
+    sb.s_magic;
+    sb.s_mnt_count;
+    sb.s_mtime;
+    sb.s_unmtime;
+}
+
+void escribirSuperBloque(char ruta[sizeChar], int inicio, superBloque sb) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        if (sb.s_magic == 0) {//indica que viene nulo el super bloque
+            sb.s_block_size;
+            sb.s_block_start;
+            sb.s_blocks_count;
+            sb.s_bm_block_start;
+            sb.s_bm_inode_start;
+            sb.s_first_blo;
+            sb.s_first_ino;
+            sb.s_free_blocks_counts;
+            sb.s_free_inodes_count;
+            sb.s_inode_size;
+            sb.s_inode_start;
+            sb.s_inodes_count = n;
+            sb.s_magic;
+            sb.s_mnt_count;
+            sb.s_mtime;
+            sb.s_unmtime;
+
+        }
+
+
+        fseek(f, inicio, SEEK_SET);
+        fwrite(&sb, sizeof (journalie), 1, f);
+        fclose(f);
+    }
+
+
 }
 
 void mountn(char ruta[sizeChar], char nombre[sizeChar]) {
     partition part = devolverParticion(ruta, nombre); //si se econtro en primaria o secundaria
     bloqueEBR eb;
-    printf("\tMontando: %s \n",nombre);
+    printf("\tMontando: %s \n", nombre);
     if (part.part_fit == 'b' || part.part_fit == 'f' || part.part_fit == 'w') {//si no hay primaria, buscar en la secundaria
         mntPush(part, eb, ruta); //se ingresa la particion a la lista.
     } else {
@@ -397,7 +540,7 @@ void mountn(char ruta[sizeChar], char nombre[sizeChar]) {
         else
             puts("\t[ERROR]No se encontró la particion");
     }
-    
+
     //imprimirListaDeParticionesMontadas();
 }
 
@@ -963,6 +1106,7 @@ bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]) {
                 //Si se encontró el primer ERB
                 int result = strncmp(ebr.part_name, nombre, sizeChar);
                 if (result == 0) {
+                    metodoDeColocacionExtendida = particiones[i].part_fit;
                     seEncontroLogica = true;
                     return ebr;
                 }
@@ -975,6 +1119,7 @@ bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]) {
                     if (aux_ebr.part_fit == 'b' || aux_ebr.part_fit == 'f' || aux_ebr.part_fit == 'w') {
                         int resultado = strncmp(aux_ebr.part_name, nombre, sizeChar);
                         if (resultado == 0) {
+                            metodoDeColocacionExtendida = particiones[i].part_fit;
                             seEncontroLogica = true;
                             return aux_ebr;
                             break;

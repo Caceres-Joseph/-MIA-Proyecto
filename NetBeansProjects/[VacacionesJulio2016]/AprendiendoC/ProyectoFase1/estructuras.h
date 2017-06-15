@@ -16,6 +16,9 @@ typedef int bool;
 #define true 1
 #define false 0
 #define sizeChar  50
+
+#define kilobyte  1000
+#define megabyte  1000000
 //Lista
 
 typedef struct token {
@@ -81,7 +84,8 @@ typedef struct{
     char journal_nombre[16];
     char journal_contenido;
     times journal_fecha;
-};
+}journalie;
+
 typedef struct{
     char status;
 }bmInodo;
