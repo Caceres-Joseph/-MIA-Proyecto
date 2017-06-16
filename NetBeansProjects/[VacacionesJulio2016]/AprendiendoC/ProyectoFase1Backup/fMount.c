@@ -32,7 +32,7 @@ void mountn(char ruta[sizeChar], char nombre[sizeChar]) {
         else
             puts("\t[ERROR]No se encontró la particion");
     }
-    
+
 }
 
 /**************************************************************
@@ -42,6 +42,7 @@ void inicializarListaMount() {
     listaDeParticiones = (mnt_lista*) malloc(sizeof (mnt_lista)); //inicializando las listas
     listaDeParticiones->cabeza = NULL;
 }
+
 void mntInsertarAlFinal(mnt_lista* lista, partition particion, bloqueEBR logica, char ruta[sizeChar]) {
     mnt_nodo* nodo = mntCrearNodo(particion, logica, ruta);
     if (lista->cabeza == NULL) {
@@ -77,7 +78,6 @@ void imprimirListaDeParticionesMontadas() {
 
 }
 
-
 mnt_nodo retornarNodoMount(char ids[sizeChar]) {
     mnt_lista* lista = listaDeParticiones;
     mnt_nodo* puntero = lista->cabeza;
@@ -94,7 +94,6 @@ mnt_nodo retornarNodoMount(char ids[sizeChar]) {
     strcpy(re.mnt_ruta, "");
     return re;
 }
-
 
 char numeroDeDisco(mnt_lista*lista, char letra) {
     mnt_nodo*puntero = lista->cabeza;
@@ -124,6 +123,7 @@ char numeroDeDisco(mnt_lista*lista, char letra) {
     }
 
 }
+
 char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]) {
     mnt_nodo*puntero = lista->cabeza;
     char letraTemporal = 'a';
@@ -157,6 +157,7 @@ char letraDeDisco(mnt_lista*lista, char ruta[sizeChar]) {
         return letraTemporal + 1;
     }
 }
+
 mnt_nodo* mntCrearNodo(partition particion, bloqueEBR logica, char ruta[sizeChar]) {
     mnt_nodo* nodo = (mnt_nodo*) malloc(sizeof (mnt_nodo));
     nodo->mnt_particion = particion;

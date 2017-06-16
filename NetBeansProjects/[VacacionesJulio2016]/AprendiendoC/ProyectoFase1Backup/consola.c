@@ -15,7 +15,7 @@
 #include "fMkdisk.h"
 #include "fMount.h"
 #include "fFdisk.h"
-
+#include "fMkfs.h"
 //del analizador
 
 bool ocurrioError = false;
@@ -577,7 +577,7 @@ void S() {
             printf("\t.........................Fdisk........................\n");
             FKD();
             if (!ocurrioError) {
-                
+
                 fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
 
             }
@@ -610,7 +610,7 @@ void S() {
             MKFS();
 
             if (!ocurrioError) {
-               // mkfs(mkfs_id, mkfs_unit, mkfs_type, mkfs_add);
+                mkfs(mkfs_id, mkfs_unit, mkfs_type, mkfs_add);
             }
 
             printf("\t.......................................................\n");
@@ -625,11 +625,11 @@ void S() {
             token tok = pop(listaDeTokens);
             //reporteMBR(tok.valor);
             reporteEBR(tok.valor);
-        }else if (strcmpi("reporteext", tok.valor)) {
+        } else if (strcmpi("reporteext", tok.valor)) {
             token tok = pop(listaDeTokens);
             //reporteMBR(tok.valor);
             reporteEXT(tok.valor);
-        }else {
+        } else {
             errorSintactico();
         }
         //////////agregar un salir
@@ -794,7 +794,7 @@ void FKD() {
             int numero;
             sscanf(cad.valor, "%i", &numero);
             if (numero > 0) {
-               
+
                 fdisk_size = numero;
                 FKD2();
                 return;
@@ -967,7 +967,7 @@ void FKD2() {
             int numero;
             sscanf(cad.valor, "%i", &numero);
             if (numero > 0) {
-                
+
                 fdisk_size = numero;
                 FKD();
                 return;

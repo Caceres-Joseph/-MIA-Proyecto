@@ -12,11 +12,12 @@
 
  *
  *       */
-             
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "fFdisk.h"
 #include "fMount.h"
+
 /*
  * 
  */
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
         consola();
     }
 
-   
+
     return (EXIT_SUCCESS);
 }
 

@@ -17,8 +17,8 @@
 void errorDeEspacio();
 
 void inicializarVarFdisk() {
-     metodoDeColocacionExtendida = 'w';
-     fdisk_ocurrioError = false;
+    metodoDeColocacionExtendida = 'w';
+    fdisk_ocurrioError = false;
 }
 
 ///prototipo
@@ -70,7 +70,7 @@ void fdisk(int size, char ruta[sizeChar], char name[sizeChar], char unit, char t
 }
 
 /**************************************************************
- * PARTICIONES                                              *** 
+ * Funciones                                                 *** 
  **************************************************************/
 
 void errorDeEspacio() {
@@ -286,82 +286,82 @@ void crearParticionLogica(int size, char ruta[sizeChar], char name[sizeChar], ch
 }
 
 void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delet[sizeChar]) {
-        bloqueMBR mbr = leerMBR(ruta);
-        partition particiones[4];
-        particiones[0] = mbr.mbr_partition_1;
-        particiones[1] = mbr.mbr_partition_2;
-        particiones[2] = mbr.mbr_partition_3;
-        particiones[3] = mbr.mbr_partition_4;
-        int i;
-        char nombre[sizeChar];
-        char nombre2[sizeChar];
+    bloqueMBR mbr = leerMBR(ruta);
+    partition particiones[4];
+    particiones[0] = mbr.mbr_partition_1;
+    particiones[1] = mbr.mbr_partition_2;
+    particiones[2] = mbr.mbr_partition_3;
+    particiones[3] = mbr.mbr_partition_4;
+    int i;
+    char nombre[sizeChar];
+    char nombre2[sizeChar];
 
-        bool encontrado = false;
-        for (i = 0; i < 4; i++) {
-            strcpy(nombre, particiones[i].part_name);
-            strcpy(nombre2, name);
+    bool encontrado = false;
+    for (i = 0; i < 4; i++) {
+        strcpy(nombre, particiones[i].part_name);
+        strcpy(nombre2, name);
 
-            if (strncmp(nombre2, nombre, sizeChar) == 0) {
-                encontrado = true;
-                break;
-            }
+        if (strncmp(nombre2, nombre, sizeChar) == 0) {
+            encontrado = true;
+            break;
         }
-        if (encontrado == true) {
+    }
+    if (encontrado == true) {
 
 
-            printf("\t\tEliminando la Particion%i, Nombre=%s\n", i + 1, particiones[i].part_name);
+        printf("\t\tEliminando la Particion%i, Nombre=%s\n", i + 1, particiones[i].part_name);
 
-            if (strncmp("fast", delet, sizeof ("fast")) == 0) {
-                printf("\t\tTipo =fast, size %d\n", sizeof (delet));
-                //elimminacion fast
-                particiones[i].part_size = 0;
-                particiones[i].part_start = 0;
-                particiones[i].part_fit = ' ';
-                strcpy(particiones[i].part_name, "");
-                particiones[i].part_status = ' ';
-                particiones[i].part_type = ' ';
+        if (strncmp("fast", delet, sizeof ("fast")) == 0) {
+            printf("\t\tTipo =fast, size %d\n", sizeof (delet));
+            //elimminacion fast
+            particiones[i].part_size = 0;
+            particiones[i].part_start = 0;
+            particiones[i].part_fit = ' ';
+            strcpy(particiones[i].part_name, "");
+            particiones[i].part_status = ' ';
+            particiones[i].part_type = ' ';
 
 
-            } else {
-                printf("\t\tTipo =full, size %d\n", sizeof (delet));
-                //elimminacion full
-                FILE *f;
-                if ((f = fopen(ruta, "r+b")) == NULL) {
-                    printf("\t\t[ERROR]error al leer el disco!\n");
-                } else {
-                    fseek(f, particiones[i].part_start, SEEK_SET);
-                    //llenando los espacios en blanco
-                    char vacio = '\0';
-                    int i = 0;
-                    for (i = 0; i < particiones[i].part_size; i++) {
-                        fwrite(&vacio, 1, 1, f);
-                    }
-                    fclose(f);
-                }
-
-                particiones[i].part_size = 0;
-                particiones[i].part_start = 0;
-                particiones[i].part_fit = ' ';
-                strcpy(particiones[i].part_name, "");
-                particiones[i].part_status = ' ';
-                particiones[i].part_type = ' ';
-                //eliminacion full
-            }
-
-            if (i == 0)
-                mbr.mbr_partition_1 = particiones[i];
-            else if (i == 1)
-                mbr.mbr_partition_2 = particiones[i];
-            else if (i == 2)
-                mbr.mbr_partition_3 = particiones[i];
-            else if (i == 3)
-                mbr.mbr_partition_4 = particiones[i];
-
-            actualizarMBR(mbr, ruta);
         } else {
-            printf("\t\t[ERROR]No se econtro partición con el nombre de %s\n", name);
+            printf("\t\tTipo =full, size %d\n", sizeof (delet));
+            //elimminacion full
+            FILE *f;
+            if ((f = fopen(ruta, "r+b")) == NULL) {
+                printf("\t\t[ERROR]error al leer el disco!\n");
+            } else {
+                fseek(f, particiones[i].part_start, SEEK_SET);
+                //llenando los espacios en blanco
+                char vacio = '\0';
+                int i = 0;
+                for (i = 0; i < particiones[i].part_size; i++) {
+                    fwrite(&vacio, 1, 1, f);
+                }
+                fclose(f);
+            }
+
+            particiones[i].part_size = 0;
+            particiones[i].part_start = 0;
+            particiones[i].part_fit = ' ';
+            strcpy(particiones[i].part_name, "");
+            particiones[i].part_status = ' ';
+            particiones[i].part_type = ' ';
+            //eliminacion full
         }
-        puts("\t.....................................................");
+
+        if (i == 0)
+            mbr.mbr_partition_1 = particiones[i];
+        else if (i == 1)
+            mbr.mbr_partition_2 = particiones[i];
+        else if (i == 2)
+            mbr.mbr_partition_3 = particiones[i];
+        else if (i == 3)
+            mbr.mbr_partition_4 = particiones[i];
+
+        actualizarMBR(mbr, ruta);
+    } else {
+        printf("\t\t[ERROR]No se econtro partición con el nombre de %s\n", name);
+    }
+    puts("\t.....................................................");
 
 }
 

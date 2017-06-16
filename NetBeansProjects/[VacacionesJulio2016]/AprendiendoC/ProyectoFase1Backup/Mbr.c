@@ -14,7 +14,6 @@
 #include "Mbr.h"
 #include "estructuras.h"
 
-
 void actualizarMBR(bloqueMBR mbr, char ruta[sizeChar]) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
@@ -40,9 +39,8 @@ bloqueMBR leerMBR(char ruta[sizeChar]) {
     return retorno;
 }
 
-
 bloqueMBR crearMBR(int tamanioDeDisc) {
-    
+
     bloqueMBR mbr2;
     time_t tiem = time(0);
     struct t*tlocal = localtime(&tiem);

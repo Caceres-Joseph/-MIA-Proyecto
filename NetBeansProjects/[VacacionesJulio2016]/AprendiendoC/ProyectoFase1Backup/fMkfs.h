@@ -14,6 +14,29 @@
 #ifndef FMKFS_H
 #define FMKFS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "estructuras.h"
+
+void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add);
+
+//SuperBloque
+superBloque sb_inicializar(int n, times tiempo, int inicio);
+void sb_escribir(char ruta[sizeChar], int inicio, superBloque sb);
+superBloque sb_retornar(char id[sizeChar]);
+
+//journalie
+void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]);
+//bitmap de inodos
+void bmi_escribir(int inicio, int n, char ruta[sizeChar], bmInodo aux[]);
+void bmi_leer(int inicio, int n, char ruta[sizeChar], bmInodo *aux);
+//bit map de blouqes
+void bmb_escribir(int inicio, int n, char ruta[sizeChar], bmBloque aux[]);
+void bmb_leer(int inicio, int n, char ruta[sizeChar], bmBloque *aux);
+//INODOS
+void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux[]);
+void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux);
+
 
 #endif /* FMKFS_H */
 
