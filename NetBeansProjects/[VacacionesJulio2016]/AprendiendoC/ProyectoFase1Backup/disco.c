@@ -39,15 +39,24 @@ void eliminarParticion(char ruta[sizeChar], char name[sizeChar], char delete[siz
 partition devolverParticion(char ruta[sizeChar], char nombre[sizeChar]);
 bloqueEBR devolverLogica(char ruta[sizeChar], char nombre[sizeChar]);
 
+void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion);
+
 superBloque sb_inicializar(int n, times tiempo, int inicio);
 void sb_escribir(char ruta[sizeChar], int inicio, superBloque sb);
 superBloque sb_retornar(char id[sizeChar]);
 
-void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux);
-
-void bloqueApuntador_escribir(int inicio, int n, char ruta[sizeChar], bloqueApuntador aux);
-void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux);
+void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]);
+void bloqueApuntador_escribir(int inicio, int n, char ruta[sizeChar], bloqueApuntador aux[]);
+void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux[]);
 void bmi_escribir(int inicio, int n, char ruta[sizeChar], bmInodo aux[]);
+void bmb_escribir(int inicio, int n, char ruta[sizeChar], bmBloque *aux);
+
+
+
+void bmi_leer(int inicio, int n, char ruta[sizeChar], bmInodo *aux);
+void bmb_leer(int inicio, int n, char ruta[sizeChar], bmBloque *aux);
+void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux);
+
 
 //Lista
 mnt_nodo* mntCrearNodo(partition particion, bloqueEBR logica, char ruta[sizeChar]);
@@ -474,36 +483,115 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
         printf("\tN en entero = %i\n", n);
         int disk = sizeof (superBloque) + n + n * sizeof (journalie) + 3 * n + n * sizeof (inodo) + 3 * n * sizeof (bloqueCarpeta);
         printf("\tTamaño de formato es= %i\n", disk);
-
-        superBloque sb = sb_inicializar(n, particion.tiempo, part_inicio + pimerEspacioEBR);
-
-        sb_escribir(particion.mnt_ruta, part_inicio + pimerEspacioEBR, sb); //Escribiendo el super bloque
-
-
-        journalie jr;
-        jr_escribir(part_inicio + pimerEspacioEBR + sizeof (superBloque), n, particion.mnt_ruta, jr);
-
-
         
-        //mandando el bloque de inodos
-        bmInodo bmi[n];
-        bmInodo bm;
-        bm.status = '0';
-        int l;
-        for (l = 0; l < n + 1; l++) {
-            bmi[l] = bm;
-        }
-        bmi[2].status = 'a';
+        crear_ext3(particion,n,part_inicio + pimerEspacioEBR);//creando los sectores, super bloque, inodos
 
-        bmi_escribir(sb.s_bm_inode_start, n, particion.mnt_ruta, bmi);
-        
-        bmBloque bmb;
-        bmb_escribir(sb.s_bm_block_start, n, particion.mnt_ruta, bmb);
-
-        //hay que escribir el super bloque
-        //JOURNALING
     }
 
+}
+
+void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
+    //n=n-1;
+    superBloque sb = sb_inicializar(n, mountNodo.tiempo, inicioParticion);
+    sb_escribir(mountNodo.mnt_ruta, inicioParticion, sb); //Escribiendo el super bloque
+
+
+    journalie jr[n];//arreglo de journalie
+    jr_escribir(inicioParticion + sizeof (superBloque), n, mountNodo.mnt_ruta, jr);
+
+     //Bitmap de bloques
+    bmBloque agrregloBmb[n*3];
+    bmBloque bmb;
+    bmb.status = '0';
+    int u;
+    for (u = 0; u < 3*n ; u++) {
+        agrregloBmb[u] = bmb;
+    }
+    agrregloBmb[0].status = 'b';
+    bmb_escribir(sb.s_bm_block_start, n, mountNodo.mnt_ruta, agrregloBmb);
+    
+    
+    
+    
+    //Bit map de inodos
+    bmInodo bmi[n];
+    bmInodo bm;
+    bm.status = '0';
+    int l;
+    for (l = 0; l < n ; l++) {
+        bmi[l] = bm;
+    }
+    bmi[0].status = 'a';
+    bmi[n-1].status = 'c';
+    bmi_escribir(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, bmi);
+
+    
+    
+    
+     
+    
+    
+    
+  
+
+    
+    // inodos
+    inodo agrregloInodo[n];
+    inodo ino;
+    int t;
+    for (t = 0; t < n ; t++) {
+        ino.i_uid=t;
+        agrregloInodo[t] = ino;
+    }
+    printf("");
+    inodos_escribir(sb.s_inode_start,n,mountNodo.mnt_ruta,agrregloInodo);
+    
+    
+    
+/*
+ * 
+ * Reportes 
+*/
+    //bitmap de indos
+    
+    bmInodo aule[n];
+    bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
+    int p;
+    printf("\t\tLa n vale=%i\n",n);
+    
+    printf("\tBitMap de inodos:\n\t");
+    
+    for (p = 0; p < n ; p++) {
+        printf("%c", aule[p].status);
+    }
+    printf("\n\t\tLa n llego hasta %i \n",p);
+    
+    
+    //bit map de bloques 
+    bmBloque matrBloque[3*n];
+    bmb_leer(sb.s_bm_block_start, n, mountNodo.mnt_ruta, matrBloque);
+    int k;
+    printf("\tBitMap de Blouqes:\n\t");
+    
+    for (k = 0; k < 3*n ; k++) {
+        printf("%c", matrBloque[k].status);
+    }
+    printf("\n");
+    
+    
+    //indos
+    inodo matrInodo[n];
+    inodos_leer(sb.s_inode_start, n, mountNodo.mnt_ruta, matrInodo);
+    int q;
+    printf("\tInodos:\n\t");
+    
+    for (q = 0; q < n ; q++) {
+        printf("%i,", matrInodo[q].i_uid);
+    }
+    printf("\n");
+    
+    
+    
 }
 
 superBloque sb_inicializar(int n, times tiempo, int inicio) {//inicializo las variables del superbloque
@@ -537,11 +625,11 @@ superBloque sb_inicializar(int n, times tiempo, int inicio) {//inicializo las va
 
     sb.s_inode_start = inicio + sizeof (superBloque) + 3 * n * sizeof (journalie) + 3 * n + n;
     sb.s_block_start = sb.s_inode_start + n * sizeof (inodo);
-    sb.s_bjpurfree=0;
+    sb.s_bjpurfree = 0;
     return sb;
 }
 
-void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux) {
+void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
         printf("\t[ERROR]error al abrir el disco!\n");
@@ -549,7 +637,7 @@ void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux) {
         int j;
         for (j = 0; j < 3 * n + 1; j++) {
             fseek(f, inicio + j * (sizeof (journalie)), SEEK_SET);
-            fwrite(&aux, sizeof (journalie), 1, f);
+            fwrite(&aux[j], sizeof (journalie), 1, f);
         }
         fclose(f);
     }
@@ -561,48 +649,87 @@ void bmi_escribir(int inicio, int n, char ruta[sizeChar], bmInodo aux[]) {
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         int j;
-        for (j = 0; j < n + 1; j++) {
+        for (j = 0; j < n ; j++) {
             fseek(f, inicio + j * (sizeof (bmInodo)), SEEK_SET);
-            bmInodo aux2 = aux[j];
-            fwrite(&aux2, sizeof (bmInodo), 1, f);
+            //bmInodo aux2 = aux[j];
+            fwrite(&aux[j], sizeof (bmInodo), 1, f);
         }
         fclose(f);
     }
 }
-
-void bmb_escribir(int inicio, int n, char ruta[sizeChar], bmBloque aux) {
+void bmb_escribir(int inicio, int n, char ruta[sizeChar], bmBloque aux[]) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         int j;
-        for (j = 0; j < n * 3 + 1; j++) {
+        for (j = 0; j < n * 3 ; j++) {
             fseek(f, inicio + j * (sizeof (bmBloque)), SEEK_SET);
-            fwrite(&aux, sizeof (bmBloque), 1, f);
+            fwrite(&aux[j], sizeof (bmBloque), 1, f);
         }
         fclose(f);
     }
 }
 
-void arreglo(int numeros[]) {
-
-}
-
-void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux) {
+void bmi_leer(int inicio, int n, char ruta[sizeChar], bmInodo *aux) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         int j;
-        for (j = 0; j < n * 3 + 1; j++) {
-            fseek(f, inicio + j * (sizeof (inodo)), SEEK_SET);
-            fwrite(&aux, sizeof (inodo), 1, f);
+        for (j = 0; j < n ; j++) {
+            //bmInodo aux2 = aux[j];
+            fseek(f, inicio + j * (sizeof (bmInodo)), SEEK_SET);
+            fread(&aux[j], sizeof (bmInodo), 1, f);
+        }
+        fclose(f);
+    }
+}
+void bmb_leer(int inicio, int n, char ruta[sizeChar], bmBloque *aux) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        int j;
+        for (j = 0; j < n * 3 ; j++) {
+            fseek(f, inicio + j * (sizeof (bmBloque)), SEEK_SET);
+            fread(&aux[j], sizeof (bmBloque), 1, f);
         }
         fclose(f);
     }
 }
 
-void bloqueApuntador_escribir(int inicio, int n, char ruta[sizeChar], bloqueApuntador aux) {
+
+
+
+void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux[]) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        int j;
+        for (j = 0; j < n  ; j++) {
+            fseek(f, inicio + j * (sizeof (inodo)), SEEK_SET);
+            fwrite(&aux[j], sizeof (inodo), 1, f);
+        }
+        fclose(f);
+    }
+}
+void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        int j;
+        for (j = 0; j < n  ; j++) {
+            fseek(f, inicio + j * (sizeof (inodo)), SEEK_SET);
+            fread(&aux[j], sizeof (inodo), 1, f);
+        }
+        fclose(f);
+    }
+}
+
+void bloqueApuntador_escribir(int inicio, int n, char ruta[sizeChar], bloqueApuntador aux[]) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
         printf("\t[ERROR]error al abrir el disco!\n");
@@ -610,7 +737,7 @@ void bloqueApuntador_escribir(int inicio, int n, char ruta[sizeChar], bloqueApun
         int j;
         for (j = 0; j < n * 3 + 1; j++) {
             fseek(f, inicio + j * (sizeof (bloqueApuntador)), SEEK_SET);
-            fwrite(&aux, sizeof (bloqueApuntador), 1, f);
+            fwrite(&aux[j], sizeof (bloqueApuntador), 1, f);
         }
         fclose(f);
     }
@@ -641,7 +768,7 @@ void sb_reporte(char id[sizeChar]) {
     printf("\t\tPrimer.InodoLibre =%i\tPrimer.BloqueLibre=%i\n", sb.s_first_ino, sb.s_first_blo);
     printf("\t\tInicioBitMapInodo =%i\tInicioBitMapBloque=%i\n", sb.s_bm_inode_start, sb.s_bm_block_start);
     printf("\t\tInicio de Inodos = %i\tInicio de Bloques =%i\n", sb.s_inode_start, sb.s_block_start);
-    printf("'t\tPrimer Jorunal libre = %i",sb.s_bjpurfree);
+    printf("\t\tPrimer Jorunal libre = %i\t", sb.s_bjpurfree);
     printf("\t.......................................................................\n");
 
 }
