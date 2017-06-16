@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/consola.o \
 	${OBJECTDIR}/fFdisk.o \
 	${OBJECTDIR}/fMkdisk.o \
+	${OBJECTDIR}/fMkfile.o \
 	${OBJECTDIR}/fMkfs.o \
 	${OBJECTDIR}/fMount.o \
 	${OBJECTDIR}/main.o
@@ -93,6 +94,11 @@ ${OBJECTDIR}/fMkdisk.o: fMkdisk.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMkdisk.o fMkdisk.c
+
+${OBJECTDIR}/fMkfile.o: fMkfile.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMkfile.o fMkfile.c
 
 ${OBJECTDIR}/fMkfs.o: fMkfs.c
 	${MKDIR} -p ${OBJECTDIR}

@@ -9,6 +9,7 @@
       <itemPath>estructuras.h</itemPath>
       <itemPath>fFdisk.h</itemPath>
       <itemPath>fMkdisk.h</itemPath>
+      <itemPath>fMkfile.h</itemPath>
       <itemPath>fMkfs.h</itemPath>
       <itemPath>fMount.h</itemPath>
       <itemPath>funciones.h</itemPath>
@@ -25,6 +26,7 @@
       <itemPath>consola.c</itemPath>
       <itemPath>fFdisk.c</itemPath>
       <itemPath>fMkdisk.c</itemPath>
+      <itemPath>fMkfile.c</itemPath>
       <itemPath>fMkfs.c</itemPath>
       <itemPath>fMount.c</itemPath>
       <itemPath>main.c</itemPath>
@@ -70,6 +72,10 @@
       <item path="fMkdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="fMkdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkfile.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkfile.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fMkfs.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -123,6 +129,10 @@
       <item path="fMkdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="fMkdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkfile.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkfile.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fMkfs.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -16,6 +16,7 @@
 #include "fMount.h"
 #include "fFdisk.h"
 #include "fMkfs.h"
+#include "fMkfile.h"
 //del analizador
 
 bool ocurrioError = false;
@@ -480,7 +481,7 @@ void RKD();
 void FKD();
 void FKD2();
 void MNT();
-
+void MKFIL();
 ///MKDisk
 int tamaS = 0;
 char rutaS[sizeChar] = "";
@@ -512,6 +513,22 @@ char mkfs_id[sizeChar] = "";
 char mkfs_type[sizeChar] = "";
 int mkfs_add = 0;
 char mkfs_unit = ' ';
+
+//mkfile
+char mkfile_id[sizeChar] = "";
+char mkfile_ruta[sizeChar] = "";
+char mkfile_p = ' ';
+int mkfile_size = 0;
+char mkfile_cont[sizeChar] = "";
+
+void inicializarVariablesMkfile() {
+    
+    strcpy(mkfile_id, ""); 
+    strcpy(mkfile_ruta, ""); 
+    strcpy(mkfile_cont, ""); 
+    mkfile_p=' ';
+    mkfile_size=0;
+}
 
 void inicializarVariablesFdisk() {
     fdisk_size = 0;
@@ -615,7 +632,18 @@ void S() {
 
             printf("\t.......................................................\n");
 
-        } else if (strcmpi("exit", tok.valor)) {
+        } else if (strcmpi("mkfile", tok.valor)) {
+            inicializarVariablesMkfile();
+            printf("\t.........................MKFILE..........................\n");
+            MKFIL();
+
+            if (!ocurrioError) {
+                mkfile(mkfile_id,mkfile_ruta,mkfile_p,mkfile_size,mkfile_cont);
+            }
+
+            printf("\t.................................   ......................\n");
+
+        }else if (strcmpi("exit", tok.valor)) {
             abort();
         } else if (strcmpi("reportembr", tok.valor)) {
             token tok = pop(listaDeTokens);
@@ -646,6 +674,71 @@ void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]) {
 /**************************************************************
  **No TERMINALES                                             ** 
  **************************************************************/
+void MKFIL() {
+    pop(listaDeTokens); //$
+    token tok = pop(listaDeTokens); //path
+    toMinusc(tok.valor);
+
+    if (strcmpi("id", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(mkfile_id, cad.valor);
+            MKFIL();
+            return;
+        } else if (strcmpi("letras", cad.tipo)) {
+            strcpy(mkfile_id, cad.valor);
+            MKFIL();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("path", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(mkfile_ruta, cad.valor);
+            MKFIL();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("p", tok.valor)) {
+        mkfile_p='p';
+        MKFIL();
+        return;
+    }else if (strcmpi("size", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("numero", cad.tipo)) {
+            int numero;
+            sscanf(cad.valor, "%i", &numero);
+            if (numero > 0) {
+                mkfile_size = numero;
+                MKFIL();
+                return;
+            } else {
+                errorSemantico("Size debe de ser mayor a cero");
+            }
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("cont", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(mkfile_cont, cad.valor);
+            MKFIL();
+            return;
+        } else {
+            errorSintactico();
+        }
+    }
+}
 
 void MKFS() {
     pop(listaDeTokens); //$
