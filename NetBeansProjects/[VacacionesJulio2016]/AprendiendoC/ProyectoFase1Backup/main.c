@@ -15,13 +15,14 @@
              
 #include <stdio.h>
 #include <stdlib.h>
-#include "funciones.h"
-#include "disco.h"
+#include "fFdisk.h"
+#include "fMount.h"
 /*
  * 
  */
 int main(int argc, char** argv) {
     inicializarListaMount();
+    inicializarVarFdisk();
     while (1) {
         consola();
     }

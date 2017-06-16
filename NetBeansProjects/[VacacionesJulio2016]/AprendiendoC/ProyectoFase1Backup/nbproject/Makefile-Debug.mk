@@ -35,8 +35,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Mbr.o \
+	${OBJECTDIR}/Reporte.o \
 	${OBJECTDIR}/consola.o \
-	${OBJECTDIR}/disco.o \
+	${OBJECTDIR}/fFdisk.o \
+	${OBJECTDIR}/fMkdisk.o \
+	${OBJECTDIR}/fMkfs.o \
+	${OBJECTDIR}/fMount.o \
 	${OBJECTDIR}/main.o
 
 
@@ -64,15 +69,40 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/proyectofase1backup: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/proyectofase1backup ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/Mbr.o: Mbr.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Mbr.o Mbr.c
+
+${OBJECTDIR}/Reporte.o: Reporte.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Reporte.o Reporte.c
+
 ${OBJECTDIR}/consola.o: consola.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/consola.o consola.c
 
-${OBJECTDIR}/disco.o: disco.c
+${OBJECTDIR}/fFdisk.o: fFdisk.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/disco.o disco.c
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fFdisk.o fFdisk.c
+
+${OBJECTDIR}/fMkdisk.o: fMkdisk.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMkdisk.o fMkdisk.c
+
+${OBJECTDIR}/fMkfs.o: fMkfs.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMkfs.o fMkfs.c
+
+${OBJECTDIR}/fMount.o: fMount.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMount.o fMount.c
 
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}

@@ -19,6 +19,7 @@ typedef int bool;
 
 #define kilobyte  1000
 #define megabyte  1000000
+#define tamaDiscoDuro 1000000
 //Lista
 
 typedef struct token {

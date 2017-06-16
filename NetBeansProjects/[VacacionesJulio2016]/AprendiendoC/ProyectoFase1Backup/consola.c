@@ -9,10 +9,12 @@
 #include <stddef.h>
 #include <string.h>
 #include "funciones.h"
-#include "disco.h" 
+
 #include "estructuras.h"
-
-
+#include "Reporte.h"
+#include "fMkdisk.h"
+#include "fMount.h"
+#include "fFdisk.h"
 
 //del analizador
 
@@ -608,7 +610,7 @@ void S() {
             MKFS();
 
             if (!ocurrioError) {
-                mkfs(mkfs_id, mkfs_unit, mkfs_type, mkfs_add);
+               // mkfs(mkfs_id, mkfs_unit, mkfs_type, mkfs_add);
             }
 
             printf("\t.......................................................\n");
@@ -626,7 +628,7 @@ void S() {
         }else if (strcmpi("reporteext", tok.valor)) {
             token tok = pop(listaDeTokens);
             //reporteMBR(tok.valor);
-            sb_reporte(tok.valor);
+            reporteEXT(tok.valor);
         }else {
             errorSintactico();
         }

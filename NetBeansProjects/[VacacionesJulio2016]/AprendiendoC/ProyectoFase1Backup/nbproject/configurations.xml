@@ -4,8 +4,13 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>disco.h</itemPath>
+      <itemPath>Mbr.h</itemPath>
+      <itemPath>Reporte.h</itemPath>
       <itemPath>estructuras.h</itemPath>
+      <itemPath>fFdisk.h</itemPath>
+      <itemPath>fMkdisk.h</itemPath>
+      <itemPath>fMkfs.h</itemPath>
+      <itemPath>fMount.h</itemPath>
       <itemPath>funciones.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -15,8 +20,13 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>Mbr.c</itemPath>
+      <itemPath>Reporte.c</itemPath>
       <itemPath>consola.c</itemPath>
-      <itemPath>disco.c</itemPath>
+      <itemPath>fFdisk.c</itemPath>
+      <itemPath>fMkdisk.c</itemPath>
+      <itemPath>fMkfs.c</itemPath>
+      <itemPath>fMount.c</itemPath>
       <itemPath>main.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -41,13 +51,33 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="Mbr.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Mbr.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Reporte.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Reporte.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="consola.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="disco.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="disco.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="estructuras.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fFdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fFdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkfs.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkfs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMount.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMount.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="funciones.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -74,13 +104,33 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="Mbr.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Mbr.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Reporte.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Reporte.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="consola.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="disco.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="disco.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="estructuras.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fFdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fFdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMkfs.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMkfs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fMount.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="fMount.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="funciones.h" ex="false" tool="3" flavor2="0">
       </item>
