@@ -589,9 +589,6 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
         printf("%i,", matrInodo[q].i_uid);
     }
     printf("\n");
-    
-    
-    
 }
 
 superBloque sb_inicializar(int n, times tiempo, int inicio) {//inicializo las variables del superbloque
@@ -768,8 +765,51 @@ void sb_reporte(char id[sizeChar]) {
     printf("\t\tPrimer.InodoLibre =%i\tPrimer.BloqueLibre=%i\n", sb.s_first_ino, sb.s_first_blo);
     printf("\t\tInicioBitMapInodo =%i\tInicioBitMapBloque=%i\n", sb.s_bm_inode_start, sb.s_bm_block_start);
     printf("\t\tInicio de Inodos = %i\tInicio de Bloques =%i\n", sb.s_inode_start, sb.s_block_start);
-    printf("\t\tPrimer Jorunal libre = %i\t", sb.s_bjpurfree);
-    printf("\t.......................................................................\n");
+    printf("\t\tPrimer Jorunal libre = %i\t\n", sb.s_bjpurfree);
+    
+    
+    /*
+ * 
+ * Reportes 
+*/
+    //bitmap de indos
+    
+    mnt_nodo mountNodo = retornarNodoMount(id);
+    int n=sb.s_inodes_count;
+    
+    bmInodo aule[n];
+    bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
+    int p;
+    printf("\t.....................BitMap de inodos:................................\n\t");
+    
+    
+    for (p = 0; p < n ; p++) {
+        printf("%c", aule[p].status);
+    }
+    printf("\n");
+     printf("\t....................BitMap de bloques:................................\n\t");
+    //bit map de bloques 
+    bmBloque matrBloque[3*n];
+    bmb_leer(sb.s_bm_block_start, n, mountNodo.mnt_ruta, matrBloque);
+    int k;
+    
+    
+    for (k = 0; k < 3*n ; k++) {
+        printf("%c", matrBloque[k].status);
+    }
+    printf("\n");
+    
+    printf("\t................................Inodos:................................\n\t");
+    //indos
+    inodo matrInodo[n];
+    inodos_leer(sb.s_inode_start, n, mountNodo.mnt_ruta, matrInodo);
+    int q;
+    
+    
+    for (q = 0; q < n ; q++) {
+        printf("%i,", matrInodo[q].i_uid);
+    }
+    printf("\n");
 
 }
 
