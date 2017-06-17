@@ -32,6 +32,20 @@ typedef struct Nodo {
     struct Nodo* siguiente;
 } Nodo;
 
+typedef struct {
+    char part_type;//e o p
+    int part_inicio;//inicio 
+    int part_tamano;//tamaño d ela particion
+    char part_colocacion;//w,b,
+    int part_espacioEbr;//si es extendida
+    int part_status;//activa o no 
+    char part_name[sizeChar];//nombre de la partición.
+    char ruta[sizeChar];//ruta del disco
+    char id[sizeChar];//id del disco
+    times part_time; //tiempo en que se monto el disco
+
+}particionMontada;
+
 
 
 
@@ -42,12 +56,12 @@ typedef struct Lista {
 //Disco
 
 typedef struct {
-    char part_status;
-    char part_type;
-    char part_fit;
-    int part_start;
-    int part_size;
-    char part_name[16];
+    char part_status;//indica si la particion esta activa o no
+    char part_type;//Indica si partición es primaria o extendida P o E
+    char part_fit;//Tipo de ajuste de la partición. Tendrá los valores BF (Best), FF (First) o WF (worst)
+    int part_start;//Indica en qué byte del disco inicia la partición
+    int part_size;//Contiene el tamaño total de la partición en bytes.
+    char part_name[16];//Name de la partición
 } partition;
 
 ///------------EBR----------------------
@@ -61,23 +75,23 @@ typedef struct {
 } bloqueEBR;
 
 typedef struct{
-    int s_inodes_count;
-    int s_blocks_count;
-    int s_free_blocks_counts;
-    int s_free_inodes_count;
-    times s_mtime;
-    times s_unmtime;
-    int s_mnt_count;
-    int s_magic;
-    int s_inode_size;
-    int s_block_size;
-    int s_first_ino;
-    int s_first_blo;
-    int s_bm_inode_start;
-    int s_bm_block_start;
-    int s_inode_start;
-    int s_block_start;
-    int s_bjpurfree;
+    int s_inodes_count;//Guarda el número total de inodos
+    int s_blocks_count;//Guarda el número total de bloques
+    int s_free_blocks_counts;//Contiene el número de bloques libres
+    int s_free_inodes_count;//Contiene el número de inodos libres
+    times s_mtime;//Última fecha en el que el sistema fue montado
+    times s_unmtime;//Última fecha en que el sistema fue desmontado
+    int s_mnt_count;//Indica cuantas veces se ha montado el sistema
+    int s_magic;//Valor que identifica al sistema de archivos, tendrá el valor 0xEF53
+    int s_inode_size;//Tamaño del inodo
+    int s_block_size;//Tamaño del bloque
+    int s_first_ino;//Primer inodo libre
+    int s_first_blo;//Primer bloque libre
+    int s_bm_inode_start;//Guardará el inicio del bitmap de inodos
+    int s_bm_block_start;//Guardará el inicio del bitmap de bloques
+    int s_inode_start;//Guardará el inicio de la tabla de inodos
+    int s_block_start;//Guardará el inico de la tabla de bloques
+    int s_bjpurfree;//El padre 
 }superBloque;
 
 typedef struct{
@@ -96,15 +110,18 @@ typedef struct{
 }bmBloque;
 
 typedef struct{
-    int i_uid ;
-    int i_gid;
-    int i_size;
-    times i_atime;
-    times i_ctime;
-    times i_mtime;
-    int i_block[15];
-    char i_type;
+    int i_uid ;//UID del propietario
+    int i_gid;//GID al grupo al que pertenece
+    
+    int i_size;//tamaño del archivo en bytes
+    times i_atime;//ultima fecha que se leyó el inodo sin modificarlo
+    times i_ctime;//fecha en la que se creó el inodo
+    times i_mtime;//ultima fecha en la que se modifico el inodo
+    int i_block[15];//arreglo de punteros, los prieros 12 son directos, 13 indirecto, 14 indirecto doble, 15 indirecto triple
+    char i_type;//1 = archivo, 0 = carpeta
 }inodo;
+
+
 typedef struct{
     char b_name[12];
     int b_inodo;
@@ -133,7 +150,7 @@ typedef struct{
 typedef struct{
     partition mnt_particion;//esto si es primaria o secundaria 
     bloqueEBR mnt_ebr;//esto si es extendida
-    times tiempo;
+    times tiempo;//tiempo en que fue montada la particion
     char mnt_ruta[sizeChar];
     char mnt_id[sizeChar];
     struct mnt_nodo* siguiente;

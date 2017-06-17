@@ -71,6 +71,9 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
         printf("\tTamaño de formato es= %i\n", disk);
 
         crear_ext3(particion, n, part_inicio + pimerEspacioEBR); //creando los sectores, super bloque, inodos
+        
+        //luego tengo que crear la raíz por que si no voy a pisar
+        
 
     }
 }
@@ -160,7 +163,7 @@ superBloque sb_inicializar(int n, times tiempo, int inicio) {//inicializo las va
 
     sb.s_inode_start = inicio + sizeof (superBloque) + 3 * n * sizeof (journalie) + 3 * n + n;
     sb.s_block_start = sb.s_inode_start + n * sizeof (inodo);
-    sb.s_bjpurfree = 0;
+    sb.s_bjpurfree = inicio + sizeof (superBloque);
     return sb;
 }
 void sb_escribir(char ruta[sizeChar], int inicio, superBloque sb) {

@@ -16,5 +16,13 @@
 #include "estructuras.h"
 
 void mkfile(char id[sizeChar],char ruta[sizeChar], char p, int size,char count[sizeChar]);
+
+//funciones 
+void fechaActual(char fecha[sizeChar]);
+
+
+//carpetas
+void crearRoot(char id[sizeChar]);
+void insertarCarpeta(char id[sizeChar], char ruta[sizeChar]);
 #endif /* FMKFILE_H */
 

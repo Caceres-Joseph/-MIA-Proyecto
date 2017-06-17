@@ -181,5 +181,5 @@ void reporteEXT(char id[sizeChar]) {
             printf("%i,", matrInodo[q].i_uid);
         }
         printf("\n");
-
 }
+

@@ -17,6 +17,11 @@
 //la cabeza
 mnt_lista* listaDeParticiones;
 
+//me devuelve la particion montada
+particionMontada devolverParticionMontada(char id[sizeChar]);
+void verParticionMontada(char id[sizeChar]);
+
+
 
 void mountn(char ruta[sizeChar],char nombre[sizeChar]);
 

@@ -641,7 +641,7 @@ void S() {
                 mkfile(mkfile_id,mkfile_ruta,mkfile_p,mkfile_size,mkfile_cont);
             }
 
-            printf("\t.................................   ......................\n");
+            printf("\t..........................................................\n");
 
         }else if (strcmpi("exit", tok.valor)) {
             abort();
