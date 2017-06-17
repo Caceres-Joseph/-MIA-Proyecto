@@ -144,7 +144,7 @@ particionMontada devolverParticionMontada(char id[sizeChar]) {
         part_colocacion = mountNodo.mnt_ebr.part_fit; //w,b, hay que buscar la particion extendida
         part_espacioEbr = sizeof (bloqueEBR); //si es extendida
         part_status = 1; //activa o no 
-        strcpy(part_name, mountNodo.mnt_particion.part_name); //nombre de la partición.
+        strcpy(part_name, mountNodo.mnt_ebr.part_name); //nombre de la partición.
     }
     particionMontada retorno;
 

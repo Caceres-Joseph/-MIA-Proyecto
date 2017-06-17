@@ -14,6 +14,7 @@
 #include "fFdisk.h"
 #include "fMount.h"
 #include "fMkfs.h"
+#include "fMkfile.h"
 
 void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
 
@@ -73,7 +74,8 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
         crear_ext3(particion, n, part_inicio + pimerEspacioEBR); //creando los sectores, super bloque, inodos
         
         //luego tengo que crear la raíz por que si no voy a pisar
-        
+        printf("\tCreando la carpeta raíz\n");
+        crearRoot(id);
 
     }
 }
@@ -329,6 +331,22 @@ void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux) {
             fseek(f, inicio + j * (sizeof (inodo)), SEEK_SET);
             fread(&aux[j], sizeof (inodo), 1, f);
         }
+        fclose(f);
+    }
+}
+
+/**************************************************************
+ * Carpetas                                                 *** 
+ **************************************************************/
+
+void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carpeta) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        //la n que recibo es la posicion del bloque.
+        fseek(f,inicio+n*(sizeof(bloqueCarpeta)),SEEK_SET);
+        fwrite(&carpeta, sizeof (bloqueCarpeta), 1, f);//insertando la carpeta;
         fclose(f);
     }
 }

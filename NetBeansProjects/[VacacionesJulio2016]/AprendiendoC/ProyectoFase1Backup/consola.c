@@ -482,6 +482,8 @@ void FKD();
 void FKD2();
 void MNT();
 void MKFIL();
+void MKDIR();
+
 ///MKDisk
 int tamaS = 0;
 char rutaS[sizeChar] = "";
@@ -521,11 +523,32 @@ char mkfile_p = ' ';
 int mkfile_size = 0;
 char mkfile_cont[sizeChar] = "";
 
+//mkdir
+char mkdir_id[sizeChar] = "";
+char mkdir_ruta[sizeChar] = "";
+char mkdir_p = ' ';
+
+
+
+void inicializarVariablesMkdir() {
+    
+    strcpy(mkdir_id, ""); 
+    memset(mkdir_id, 0, sizeChar);
+    strcpy(mkdir_ruta, "");  
+    memset(mkdir_ruta, 0, sizeChar);
+    mkdir_p=' ';
+}
+
 void inicializarVariablesMkfile() {
     
-    strcpy(mkfile_id, ""); 
+    strcpy(mkfile_id, "");
+    memset(mkfile_id, 0, sizeChar);
+    
     strcpy(mkfile_ruta, ""); 
+    memset(mkfile_ruta, 0, sizeChar);
+    
     strcpy(mkfile_cont, ""); 
+    memset(mkfile_cont, 0, sizeChar);
     mkfile_p=' ';
     mkfile_size=0;
 }
@@ -533,11 +556,18 @@ void inicializarVariablesMkfile() {
 void inicializarVariablesFdisk() {
     fdisk_size = 0;
     strcpy(fdisk_path, ""); //fdisk_path = "";
+    memset(fdisk_path, 0, sizeChar);
+    
     strcpy(fdisk_name, ""); //fdisk_name = "";
+    memset(fdisk_name, 0, sizeChar);
+    
     fdisk_unit = ' ';
     fdisk_type = ' ';
     strcpy(fdisk_fit, ""); //fdisk_fit = "";
+    memset(fdisk_fit, 0, sizeChar);
+    
     strcpy(fdisk_delete, ""); //fdisk_delete = "";
+    memset(fdisk_delete, 0, sizeChar);
     fdisk_add = 0;
 }
 
@@ -545,14 +575,19 @@ void inicializarVariablesMkfs() {
     mkfs_add = 0;
     mkfs_unit = ' ';
     strcpy(mkfs_id, "");
+     memset(mkfs_id, 0, sizeChar);
     strcpy(mkfs_type, "");
+     memset(mkfs_type, 0, sizeChar);
 
 }
 
 void inicializarVariablesMnt() {
     strcpy(mnt_nombre, "");
+    memset(mnt_nombre, 0, sizeChar);
     strcpy(mnt_ruta, "");
+    memset(mnt_ruta, 0, sizeChar);
     strcpy(mnt_id, "");
+    memset(mnt_id, 0, sizeChar);
 
 }
 
@@ -609,7 +644,7 @@ void S() {
                 if (retorno == 0) {//solo viene mount
                     imprimirListaDeParticionesMontadas();
                 } else {
-                    printf("\t.........................Mount........................\n");
+                    printf("\t.............>[Montando Partición]<....................\n");
 
                     mountn(mnt_ruta, mnt_nombre);
 
@@ -623,7 +658,7 @@ void S() {
 
         } else if (strcmpi("mkfs", tok.valor)) {
             inicializarVariablesMkfs();
-            printf("\t.........................MKFS..........................\n");
+            printf("\t....................>[Formatear]<..........................\n");
             MKFS();
 
             if (!ocurrioError) {
@@ -634,14 +669,25 @@ void S() {
 
         } else if (strcmpi("mkfile", tok.valor)) {
             inicializarVariablesMkfile();
-            printf("\t.........................MKFILE..........................\n");
+            printf("\t.................>[Creando archivos]<........................\n");
             MKFIL();
 
             if (!ocurrioError) {
                 mkfile(mkfile_id,mkfile_ruta,mkfile_p,mkfile_size,mkfile_cont);
             }
 
-            printf("\t..........................................................\n");
+            printf("\t..............................................................\n");
+
+        }else if (strcmpi("mkdir", tok.valor)) {
+            inicializarVariablesMkdir();
+            printf("\t..................>[Creando carpeta]<..........................\n");
+            MKDIR();
+
+            if (!ocurrioError) {
+                mkdir(mkdir_id,mkdir_ruta,mkdir_p);
+            }
+
+            printf("\t................................................................\n");
 
         }else if (strcmpi("exit", tok.valor)) {
             abort();
@@ -674,6 +720,45 @@ void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]) {
 /**************************************************************
  **No TERMINALES                                             ** 
  **************************************************************/
+void MKDIR() {
+    pop(listaDeTokens); //$
+    token tok = pop(listaDeTokens); //path
+    toMinusc(tok.valor);
+
+    if (strcmpi("id", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(mkdir_id, cad.valor);
+            MKDIR();
+            return;
+        } else if (strcmpi("letras", cad.tipo)) {
+            strcpy(mkdir_id, cad.valor);
+            MKDIR();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("path", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(mkdir_ruta, cad.valor);
+            MKDIR();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("p", tok.valor)) {
+        mkdir_p='p';
+        MKDIR();
+        return;
+    }
+}
+
+
 void MKFIL() {
     pop(listaDeTokens); //$
     token tok = pop(listaDeTokens); //path

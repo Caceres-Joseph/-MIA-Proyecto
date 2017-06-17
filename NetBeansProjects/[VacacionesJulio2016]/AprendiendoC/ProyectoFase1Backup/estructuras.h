@@ -146,6 +146,16 @@ typedef struct{
 
 ///------------Mount  ----------------------
 
+typedef struct{
+    char dato[sizeChar];
+    struct str_nodo* siguiente;
+}str_nodo;
+typedef struct{
+    str_nodo* cabeza;
+    
+}str_lista;
+
+
 
 typedef struct{
     partition mnt_particion;//esto si es primaria o secundaria 

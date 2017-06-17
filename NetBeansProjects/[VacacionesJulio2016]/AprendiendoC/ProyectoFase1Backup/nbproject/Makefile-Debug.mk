@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Reporte.o \
 	${OBJECTDIR}/consola.o \
 	${OBJECTDIR}/fFdisk.o \
+	${OBJECTDIR}/fMkdir.o \
 	${OBJECTDIR}/fMkdisk.o \
 	${OBJECTDIR}/fMkfile.o \
 	${OBJECTDIR}/fMkfs.o \
@@ -89,6 +90,11 @@ ${OBJECTDIR}/fFdisk.o: fFdisk.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fFdisk.o fFdisk.c
+
+${OBJECTDIR}/fMkdir.o: fMkdir.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMkdir.o fMkdir.c
 
 ${OBJECTDIR}/fMkdisk.o: fMkdisk.c
 	${MKDIR} -p ${OBJECTDIR}
