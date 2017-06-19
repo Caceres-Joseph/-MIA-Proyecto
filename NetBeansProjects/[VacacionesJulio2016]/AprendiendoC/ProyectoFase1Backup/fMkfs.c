@@ -76,6 +76,7 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
         //luego tengo que crear la raíz por que si no voy a pisar
         printf("\tCreando la carpeta raíz\n");
         crearRoot(id);
+        //crearHome(id); 
 
     }
 }
@@ -123,6 +124,11 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
     // inodos
     inodo agrregloInodo[n];
     inodo ino;
+    int p;
+    for (p = 0; p < 15; p++) {//llenando los puntero con -1
+        ino.i_block[p]=-1;
+    }
+    
     int t;
     for (t = 0; t < n; t++) {
         ino.i_uid = t;
@@ -349,4 +355,18 @@ void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carp
         fwrite(&carpeta, sizeof (bloqueCarpeta), 1, f);//insertando la carpeta;
         fclose(f);
     }
+}
+
+bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]) {
+    FILE *f;
+    bloqueCarpeta carpeta;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        //la n que recibo es la posicion del bloque.
+        fseek(f,inicio+n*(sizeof(bloqueCarpeta)),SEEK_SET);
+        fread(&carpeta, sizeof (bloqueCarpeta), 1, f);//insertando la carpeta;
+        fclose(f);
+    }
+    return carpeta;
 }

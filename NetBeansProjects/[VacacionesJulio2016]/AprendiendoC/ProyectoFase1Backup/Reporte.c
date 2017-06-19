@@ -128,58 +128,79 @@ void reporteEBR(char ruta[sizeChar]) {
 //del superBloque
 
 void reporteEXT(char id[sizeChar]) {
-        printf("\t...........................SB:%s......................................\n", id);
-        superBloque sb = sb_retornar(id);
-        printf("\t\tFechaMontaje =%s\tFechaDesmontaje=%s\n", sb.s_mtime, sb.s_unmtime);
-        printf("\t\tNo.Montajes=%i\n", sb.s_mnt_count);
+    printf("\t...........................SB:%s......................................\n", id);
+    superBloque sb = sb_retornar(id);
+    printf("\t\tFechaMontaje =%s\tFechaDesmontaje=%s\n", sb.s_mtime, sb.s_unmtime);
+    printf("\t\tNo.Montajes=%i\n", sb.s_mnt_count);
 
-        printf("\t\tNumeros de Inodos =%i\tNúmero de Bloques=%i\n", sb.s_inodes_count, sb.s_blocks_count);
-        printf("\t\tInodos Libres  =  %i\tBloques libres  =  %i\n", sb.s_free_blocks_counts, sb.s_free_inodes_count);
-        printf("\t\tTamaño de Inodos  =%i\tTamaño de Bloques =%i\n", sb.s_inode_size, sb.s_block_size);
-        printf("\t\tPrimer.InodoLibre =%i\tPrimer.BloqueLibre=%i\n", sb.s_first_ino, sb.s_first_blo);
-        printf("\t\tInicioBitMapInodo =%i\tInicioBitMapBloque=%i\n", sb.s_bm_inode_start, sb.s_bm_block_start);
-        printf("\t\tInicio de Inodos = %i\tInicio de Bloques =%i\n", sb.s_inode_start, sb.s_block_start);
-        printf("\t\tPrimer Jorunal libre = %i\t\n", sb.s_bjpurfree);
-
-
-   
-        //bitmap de indos
-
-        mnt_nodo mountNodo = retornarNodoMount(id);
-        int n = sb.s_inodes_count;
-
-        bmInodo aule[n];
-        bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
-        int p;
-        printf("\t.....................BitMap de inodos:................................\n\t");
+    printf("\t\tNumeros de Inodos =%i\tNúmero de Bloques=%i\n", sb.s_inodes_count, sb.s_blocks_count);
+    printf("\t\tInodos Libres  =  %i\tBloques libres  =  %i\n", sb.s_free_blocks_counts, sb.s_free_inodes_count);
+    printf("\t\tTamaño de Inodos  =%i\tTamaño de Bloques =%i\n", sb.s_inode_size, sb.s_block_size);
+    printf("\t\tPrimer.InodoLibre =%i\tPrimer.BloqueLibre=%i\n", sb.s_first_ino, sb.s_first_blo);
+    printf("\t\tInicioBitMapInodo =%i\tInicioBitMapBloque=%i\n", sb.s_bm_inode_start, sb.s_bm_block_start);
+    printf("\t\tInicio de Inodos = %i\tInicio de Bloques =%i\n", sb.s_inode_start, sb.s_block_start);
+    printf("\t\tPrimer Jorunal libre = %i\t\n", sb.s_bjpurfree);
 
 
-        for (p = 0; p < n; p++) {
-            printf("%c", aule[p].status);
+
+    //bitmap de indos
+
+    mnt_nodo mountNodo = retornarNodoMount(id);
+    int n = sb.s_inodes_count;
+
+    bmInodo aule[n];
+    bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
+    int p;
+    printf("\t.....................BitMap de inodos:................................\n\t");
+
+
+    for (p = 0; p < n; p++) {
+        printf("%c", aule[p].status);
+    }
+    printf("\n");
+    printf("\t....................BitMap de bloques:................................\n\t");
+    //bit map de bloques 
+    bmBloque matrBloque[3 * n];
+    bmb_leer(sb.s_bm_block_start, n, mountNodo.mnt_ruta, matrBloque);
+    int k;
+
+
+    for (k = 0; k < 3 * n; k++) {
+        printf("%c", matrBloque[k].status);
+    }
+    printf("\n");
+
+    printf("\t................................Inodos:................................\n\t");
+    //indos
+    inodo matrInodo[n];
+    inodos_leer(sb.s_inode_start, n, mountNodo.mnt_ruta, matrInodo);
+    int q;
+
+    for (q = 0; q < 4; q++) {
+        int u;
+        printf("\nInodo %i\n\t",q);
+        for (u = 0; u < 11; u++) {
+            printf("%i->Ap:%i|,", u, matrInodo[q].i_block[u]);
         }
-        printf("\n");
-        printf("\t....................BitMap de bloques:................................\n\t");
-        //bit map de bloques 
-        bmBloque matrBloque[3 * n];
-        bmb_leer(sb.s_bm_block_start, n, mountNodo.mnt_ruta, matrBloque);
-        int k;
-
-
-        for (k = 0; k < 3 * n; k++) {
-            printf("%c", matrBloque[k].status);
+    }
+/*
+    printf("\t................................Bloques:................................\n\t");
+    //indos
+    bloqueCarpeta carpeta;
+    // blqcarp_escribir(sb.s_block_start, 1, partMontada.ruta, carpeta);
+    int os;
+    for (os = 0; os < 10; os++) {
+        //void blqcarp_leer(int inicio, int n, char ruta[sizeChar], bloqueCarpeta *carpeta) 
+        //blqcarp_leer(sb.s_block_start, os, mountNodo.mnt_ruta, carpeta);
+        carpeta = blqcarp_leer(sb.s_block_start, os, mountNodo.mnt_ruta);
+        int ku;
+        printf("Ap %i\n\t", os);
+        for (ku = 0; ku < 4; ku++) {
+            printf("|Nom: %s, Ind: %i|", carpeta.b_content[ku].b_name, carpeta.b_content[ku].b_inodo);
         }
-        printf("\n");
+    }
+*/
 
-        printf("\t................................Inodos:................................\n\t");
-        //indos
-        inodo matrInodo[n];
-        inodos_leer(sb.s_inode_start, n, mountNodo.mnt_ruta, matrInodo);
-        int q;
-
-
-        for (q = 0; q < n; q++) {
-            printf("%i,", matrInodo[q].i_uid);
-        }
-        printf("\n");
+    printf("\n");
 }
 

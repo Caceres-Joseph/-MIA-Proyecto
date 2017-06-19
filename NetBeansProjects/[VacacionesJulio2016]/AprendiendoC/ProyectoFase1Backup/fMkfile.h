@@ -23,6 +23,8 @@ void fechaActual(char fecha[sizeChar]);
 
 //carpetas
 void crearRoot(char id[sizeChar]);
+void crearHome(char id[sizeChar]) ;
+
 void insertarCarpeta(char id[sizeChar], char ruta[sizeChar]);
 #endif /* FMKFILE_H */
 

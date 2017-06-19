@@ -42,5 +42,7 @@ void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux);
 //Bloques 
 //carpetas
 void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carpeta) ;
+//void blqcarp_leer(int inicio, int n, char ruta[sizeChar], bloqueCarpeta *carpeta);
+bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]);
 #endif /* FMKFS_H */
 
