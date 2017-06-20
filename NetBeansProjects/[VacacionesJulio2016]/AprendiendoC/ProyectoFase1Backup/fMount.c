@@ -35,6 +35,21 @@ void mountn(char ruta[sizeChar], char nombre[sizeChar]) {
     }
 
 }
+void unmount(char id[sizeChar]){
+    
+     mnt_lista* lista = listaDeParticiones;
+    mnt_nodo* puntero = lista->cabeza;
+    
+    while (puntero) {
+        int  retorno = strncmp(puntero->mnt_id, id, sizeChar);
+        if (retorno==0) {
+            
+        }
+        puntero = puntero->siguiente;
+    }
+    
+
+}
 
 /**************************************************************
  * Lista MOUNT                                               *** 

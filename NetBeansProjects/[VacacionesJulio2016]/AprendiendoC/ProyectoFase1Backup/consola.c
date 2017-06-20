@@ -145,11 +145,25 @@ void consola() {
     /*
         printf("el restultado es %i\n",num);
      */
+    memset(linea, 0, sizeof (linea));
     ocurrioError = false;
     analizadorLexico();
-
     analizadorSintactico();
 }
+
+void consola2(char entrada[200]) {
+    memset(linea, 0, sizeof (linea));
+    ocurrioError = false;
+    strcpy(linea, entrada);
+    //analisis lexico
+    listaDeTokens = (Lista*) malloc(sizeof (Lista));
+    listaDeTokens->cabeza = NULL;
+    q0(0);
+
+    //analisis sintactico
+    analizadorSintactico();
+}
+
 
 void analizadorLexico() {
 
@@ -162,16 +176,6 @@ void analizadorLexico() {
     listaDeTokens = (Lista*) malloc(sizeof (Lista));
     listaDeTokens->cabeza = NULL;
     q0(0);
-    /*
-        imprimir(listaDeTokens);
-     */
-    /*
-        token tokn=pop(listaDeTokens);
-        imprimir(listaDeTokens);
-        printf("Tipo = %s",pop(listaDeTokens).tipo);
-        imprimir(listaDeTokens);
-     */
-
 }
 
 /*
@@ -463,7 +467,7 @@ bool esElUltimo(int i) {
     //printf("retornando %i", retorno);
     return retorno;
 }
-
+void inicializarVariablesRep();
 /**************************************************************
  **ANALIZADOR SINTACTICO                                      ** 
  **************************************************************/
@@ -483,7 +487,7 @@ void FKD2();
 void MNT();
 void MKFIL();
 void MKDIR();
-
+void REP();
 ///MKDisk
 int tamaS = 0;
 char rutaS[sizeChar] = "";
@@ -528,44 +532,56 @@ char mkdir_id[sizeChar] = "";
 char mkdir_ruta[sizeChar] = "";
 char mkdir_p = ' ';
 
+//rep 
+char rep_id[sizeChar] = "";
+char rep_ruta[sizeChar] = "";
+char rep_nombre[sizeChar] = "";
 
+void inicializarVariablesRep() {
+    strcpy(rep_id, "");
+    memset(rep_id, 0, sizeChar);
+    strcpy(rep_ruta, "");
+    memset(rep_ruta, 0, sizeChar);
+    strcpy(rep_nombre, "");
+    memset(rep_nombre, 0, sizeChar);
+}
 
 void inicializarVariablesMkdir() {
-    
-    strcpy(mkdir_id, ""); 
+
+    strcpy(mkdir_id, "");
     memset(mkdir_id, 0, sizeChar);
-    strcpy(mkdir_ruta, "");  
+    strcpy(mkdir_ruta, "");
     memset(mkdir_ruta, 0, sizeChar);
-    mkdir_p=' ';
+    mkdir_p = ' ';
 }
 
 void inicializarVariablesMkfile() {
-    
+
     strcpy(mkfile_id, "");
     memset(mkfile_id, 0, sizeChar);
-    
-    strcpy(mkfile_ruta, ""); 
+
+    strcpy(mkfile_ruta, "");
     memset(mkfile_ruta, 0, sizeChar);
-    
-    strcpy(mkfile_cont, ""); 
+
+    strcpy(mkfile_cont, "");
     memset(mkfile_cont, 0, sizeChar);
-    mkfile_p=' ';
-    mkfile_size=0;
+    mkfile_p = ' ';
+    mkfile_size = 0;
 }
 
 void inicializarVariablesFdisk() {
     fdisk_size = 0;
     strcpy(fdisk_path, ""); //fdisk_path = "";
     memset(fdisk_path, 0, sizeChar);
-    
+
     strcpy(fdisk_name, ""); //fdisk_name = "";
     memset(fdisk_name, 0, sizeChar);
-    
+
     fdisk_unit = ' ';
     fdisk_type = ' ';
     strcpy(fdisk_fit, ""); //fdisk_fit = "";
     memset(fdisk_fit, 0, sizeChar);
-    
+
     strcpy(fdisk_delete, ""); //fdisk_delete = "";
     memset(fdisk_delete, 0, sizeChar);
     fdisk_add = 0;
@@ -575,9 +591,9 @@ void inicializarVariablesMkfs() {
     mkfs_add = 0;
     mkfs_unit = ' ';
     strcpy(mkfs_id, "");
-     memset(mkfs_id, 0, sizeChar);
+    memset(mkfs_id, 0, sizeChar);
     strcpy(mkfs_type, "");
-     memset(mkfs_type, 0, sizeChar);
+    memset(mkfs_type, 0, sizeChar);
 
 }
 
@@ -673,25 +689,47 @@ void S() {
             MKFIL();
 
             if (!ocurrioError) {
-                mkfile(mkfile_id,mkfile_ruta,mkfile_p,mkfile_size,mkfile_cont);
+                mkfile(mkfile_id, mkfile_ruta, mkfile_p, mkfile_size, mkfile_cont);
             }
 
             printf("\t..............................................................\n");
 
-        }else if (strcmpi("mkdir", tok.valor)) {
+        } else if (strcmpi("mkdir", tok.valor)) {
             inicializarVariablesMkdir();
             printf("\t..................>[Creando carpeta]<..........................\n");
             MKDIR();
 
             if (!ocurrioError) {
-                mkdir(mkdir_id,mkdir_ruta,mkdir_p);
+                mkdir(mkdir_id, mkdir_ruta, mkdir_p);
             }
 
             printf("\t................................................................\n");
 
-        }else if (strcmpi("exit", tok.valor)) {
+        } else if (strcmpi("rep", tok.valor)) {
+            inicializarVariablesRep();
+            printf("\t..................>[Reporte]<..........................\n");
+            REP();
+            if (!ocurrioError) {
+                //void rep(char id[sizeChar], char ruta[sizeChar], char name[sizeChar])
+                rep(rep_id, rep_ruta, rep_nombre);
+            }
+            printf("\t................................................................\n");
+
+        } else if (strcmpi("exit", tok.valor)) {
             abort();
-        } else if (strcmpi("reportembr", tok.valor)) {
+        } else if (strcmpi("exec", tok.valor)) {
+            token tok = pop(listaDeTokens); //loque viene es la cadean
+
+            exec(tok.valor); //viene la ruta
+
+            //reporteMBR(tok.valor);
+        } else if (strcmpi("unmount", tok.valor)) {
+            token tok = pop(listaDeTokens); //viene el id
+            unmount(tok.valor);
+            //viene la ruta
+
+            //reporteMBR(tok.valor);
+        }  else if (strcmpi("reportembr", tok.valor)) {
             token tok = pop(listaDeTokens);
             //reporteMBR(tok.valor);
             reporteMBR(tok.valor);
@@ -720,6 +758,56 @@ void varMkDisk(int tama, char ruta[sizeChar], char disco[sizeChar]) {
 /**************************************************************
  **No TERMINALES                                             ** 
  **************************************************************/
+
+void REP() {
+    pop(listaDeTokens); //$
+    token tok = pop(listaDeTokens); //path
+    toMinusc(tok.valor);
+
+    if (strcmpi("id", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(rep_id, cad.valor);
+            REP();
+            return;
+        } else if (strcmpi("letras", cad.tipo)) {
+            strcpy(rep_id, cad.valor);
+            REP();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("path", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("cadena", cad.tipo)) {
+            strcpy(rep_ruta, cad.valor);
+            REP();
+            return;
+        } else {
+            errorSintactico();
+        }
+    } else if (strcmpi("name", tok.valor)) {
+        pop(listaDeTokens); //=
+        pop(listaDeTokens); //>
+        token cad = pop(listaDeTokens);
+        if (strcmpi("id", cad.tipo)) {
+            strcpy(rep_nombre, cad.valor);
+            REP();
+            return;
+        } else if (strcmpi("letras", cad.tipo)) {
+            strcpy(rep_nombre, cad.valor);
+            REP();
+            return;
+        } else {
+            errorSintactico();
+        }
+    }
+}
+
 void MKDIR() {
     pop(listaDeTokens); //$
     token tok = pop(listaDeTokens); //path
@@ -752,12 +840,11 @@ void MKDIR() {
             errorSintactico();
         }
     } else if (strcmpi("p", tok.valor)) {
-        mkdir_p='p';
+        mkdir_p = 'p';
         MKDIR();
         return;
     }
 }
-
 
 void MKFIL() {
     pop(listaDeTokens); //$
@@ -791,10 +878,10 @@ void MKFIL() {
             errorSintactico();
         }
     } else if (strcmpi("p", tok.valor)) {
-        mkfile_p='p';
+        mkfile_p = 'p';
         MKFIL();
         return;
-    }else if (strcmpi("size", tok.valor)) {
+    } else if (strcmpi("size", tok.valor)) {
         pop(listaDeTokens); //=
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);

@@ -26,5 +26,8 @@ void crearRoot(char id[sizeChar]);
 void crearHome(char id[sizeChar]) ;
 
 void insertarCarpeta(char id[sizeChar], char ruta[sizeChar]);
+
+void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[sizeChar]);
+void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombreCarpeta[sizeChar], int size) ;
 #endif /* FMKFILE_H */
 

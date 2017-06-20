@@ -72,7 +72,7 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
         printf("\tTamaño de formato es= %i\n", disk);
 
         crear_ext3(particion, n, part_inicio + pimerEspacioEBR); //creando los sectores, super bloque, inodos
-        
+
         //luego tengo que crear la raíz por que si no voy a pisar
         printf("\tCreando la carpeta raíz\n");
         crearRoot(id);
@@ -92,11 +92,24 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
     sb_escribir(mountNodo.mnt_ruta, inicioParticion, sb); //Escribiendo el super bloque
 
 
-    
+
+/*
     journalie jr[n]; //arreglo de journalie
     jr_escribir(inicioParticion + sizeof (superBloque), n, mountNodo.mnt_ruta, jr);
+*/
+        journalie jr[n*3]; //arreglo de journalie
+        int oiu;
+        journalie jrAux;
+        strcpy(jrAux.Padre,"");
+        jrAux.journal_contenido='0';
+        strcpy(jrAux.journal_fecha, "");
+        strcpy(jrAux.journal_nombre,"");
+        jrAux.journal_tipo='0';
+        for (oiu = 0; oiu < 3*n; oiu++) {
+            jr[oiu]= jrAux;
+        }
+        jr_escribir(inicioParticion + sizeof (superBloque), n, mountNodo.mnt_ruta, jr);
 
-    
     //Bitmap de bloques
     bmBloque agrregloBmb[n * 3];
     bmBloque bmb;
@@ -108,8 +121,6 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
     bmb_escribir(sb.s_bm_block_start, n, mountNodo.mnt_ruta, agrregloBmb);
 
 
-
-
     //Bit map de inodos
     bmInodo bmi[n];
     bmInodo bm;
@@ -119,16 +130,18 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
         bmi[l] = bm;
     }
     bmi_escribir(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, bmi);
-    
-    
+
+
+
+
     // inodos
     inodo agrregloInodo[n];
     inodo ino;
     int p;
     for (p = 0; p < 15; p++) {//llenando los puntero con -1
-        ino.i_block[p]=-1;
+        ino.i_block[p] = -1;
     }
-    
+
     int t;
     for (t = 0; t < n; t++) {
         ino.i_uid = t;
@@ -174,6 +187,7 @@ superBloque sb_inicializar(int n, times tiempo, int inicio) {//inicializo las va
     sb.s_bjpurfree = inicio + sizeof (superBloque);
     return sb;
 }
+
 void sb_escribir(char ruta[sizeChar], int inicio, superBloque sb) {
     FILE *f;
     if ((f = fopen(ruta, "r+b")) == NULL) {
@@ -186,6 +200,7 @@ void sb_escribir(char ruta[sizeChar], int inicio, superBloque sb) {
     }
 
 }
+
 superBloque sb_retornar(char id[sizeChar]) {
     superBloque sb;
     mnt_nodo particion = retornarNodoMount(id);
@@ -225,25 +240,6 @@ superBloque sb_retornar(char id[sizeChar]) {
 
 }
 
-
-/**************************************************************
- * Journalie                                                *** 
- **************************************************************/
-
-void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]) {
-    FILE *f;
-    if ((f = fopen(ruta, "r+b")) == NULL) {
-        printf("\t[ERROR]error al abrir el disco!\n");
-    } else {
-        int j;
-        for (j = 0; j < 3 * n + 1; j++) {
-            fseek(f, inicio + j * (sizeof (journalie)), SEEK_SET);
-            fwrite(&aux[j], sizeof (journalie), 1, f);
-        }
-        fclose(f);
-    }
-}
-
 /**************************************************************
  * BitMap de inodos                                         *** 
  **************************************************************/
@@ -278,6 +274,16 @@ void bmi_leer(int inicio, int n, char ruta[sizeChar], bmInodo *aux) {
     }
 }
 
+int bmi_primerLibre(int n, bmInodo aux[]) {
+    int j;
+    for (j = 0; j < n; j++) {
+        if (aux[j].status == '0') {
+            return j;
+        }
+    }
+    return 0;
+}
+
 /**************************************************************
  * BitMap de bloques                                        *** 
  **************************************************************/
@@ -305,6 +311,48 @@ void bmb_leer(int inicio, int n, char ruta[sizeChar], bmBloque *aux) {
         for (j = 0; j < n * 3; j++) {
             fseek(f, inicio + j * (sizeof (bmBloque)), SEEK_SET);
             fread(&aux[j], sizeof (bmBloque), 1, f);
+        }
+        fclose(f);
+    }
+}
+
+int bmb_primerLibre(int n, bmBloque aux[]) {
+    int j;
+    for (j = 0; j < n; j++) {
+        if (aux[j].status == '0') {
+            return j;
+        }
+    }
+    return 0;
+}
+
+/**************************************************************
+ * Journalie                                                *** 
+ **************************************************************/
+
+void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        int j;
+        for (j = 0; j < 3 * n; j++) {
+            fseek(f, inicio + j * (sizeof (journalie)), SEEK_SET);
+            fwrite(&aux[j], sizeof (journalie), 1, f);
+        }
+        fclose(f);
+    }
+}
+
+void jr_leer(int inicio, int n, char ruta[sizeChar], journalie *aux) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        int j;
+        for (j = 0; j < n * 3; j++) {
+            fseek(f, inicio + j * (sizeof (journalie)), SEEK_SET);
+            fread(&aux[j], sizeof (journalie), 1, f);
         }
         fclose(f);
     }
@@ -351,8 +399,19 @@ void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carp
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         //la n que recibo es la posicion del bloque.
-        fseek(f,inicio+n*(sizeof(bloqueCarpeta)),SEEK_SET);
-        fwrite(&carpeta, sizeof (bloqueCarpeta), 1, f);//insertando la carpeta;
+        fseek(f, inicio + n * (sizeof (bloqueCarpeta)), SEEK_SET);
+        fwrite(&carpeta, sizeof (bloqueCarpeta), 1, f); //insertando la carpeta;
+        fclose(f);
+    }
+}
+void blqArch_escribir(int inicio, int n, char ruta[sizeChar], bloqueArchivo archivo) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        //la n que recibo es la posicion del bloque.
+        fseek(f, inicio + n * (sizeof (bloqueArchivo)), SEEK_SET);
+        fwrite(&archivo, sizeof (bloqueArchivo), 1, f); //insertando la carpeta;
         fclose(f);
     }
 }
@@ -364,8 +423,8 @@ bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]) {
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         //la n que recibo es la posicion del bloque.
-        fseek(f,inicio+n*(sizeof(bloqueCarpeta)),SEEK_SET);
-        fread(&carpeta, sizeof (bloqueCarpeta), 1, f);//insertando la carpeta;
+        fseek(f, inicio + n * (sizeof (bloqueCarpeta)), SEEK_SET);
+        fread(&carpeta, sizeof (bloqueCarpeta), 1, f); //insertando la carpeta;
         fclose(f);
     }
     return carpeta;

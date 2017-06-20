@@ -44,6 +44,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/fMkfile.o \
 	${OBJECTDIR}/fMkfs.o \
 	${OBJECTDIR}/fMount.o \
+	${OBJECTDIR}/fRep.o \
 	${OBJECTDIR}/main.o
 
 
@@ -115,6 +116,11 @@ ${OBJECTDIR}/fMount.o: fMount.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fMount.o fMount.c
+
+${OBJECTDIR}/fRep.o: fRep.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fRep.o fRep.c
 
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}

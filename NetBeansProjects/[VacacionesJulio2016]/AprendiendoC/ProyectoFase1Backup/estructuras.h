@@ -91,14 +91,14 @@ typedef struct{
     int s_bm_block_start;//Guardará el inicio del bitmap de bloques
     int s_inode_start;//Guardará el inicio de la tabla de inodos
     int s_block_start;//Guardará el inico de la tabla de bloques
-    int s_bjpurfree;//El padre 
+    int s_bjpurfree;//Primer Journalie libre
 }superBloque;
 
 typedef struct{
-    char journal_tipo;
-    char journal_nombre[16];
+    char journal_tipo;//0 si es archivo 1 directorio
+    char journal_nombre[16];//nombre archivo/carpeta
     char journal_contenido;
-    times journal_fecha;
+    times journal_fecha;//fecha en la que se ralizo
     char Padre[12];
 }journalie;
 

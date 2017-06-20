@@ -22,6 +22,7 @@ particionMontada devolverParticionMontada(char id[sizeChar]);
 void verParticionMontada(char id[sizeChar]);
 
 
+void unmount(char id[sizeChar]);
 
 void mountn(char ruta[sizeChar],char nombre[sizeChar]);
 

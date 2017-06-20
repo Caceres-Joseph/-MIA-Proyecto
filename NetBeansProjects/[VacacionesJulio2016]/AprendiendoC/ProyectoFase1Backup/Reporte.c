@@ -145,6 +145,7 @@ void reporteEXT(char id[sizeChar]) {
 
     //bitmap de indos
 
+    particionMontada partMontada = devolverParticionMontada(id);
     mnt_nodo mountNodo = retornarNodoMount(id);
     int n = sb.s_inodes_count;
 
@@ -176,31 +177,41 @@ void reporteEXT(char id[sizeChar]) {
     inodos_leer(sb.s_inode_start, n, mountNodo.mnt_ruta, matrInodo);
     int q;
 
-    for (q = 0; q < 4; q++) {
+    for (q = 0; q < 15; q++) {
         int u;
-        printf("\nInodo %i\n\t",q);
+        printf("\nInodo %i\n\t", q);
         for (u = 0; u < 11; u++) {
             printf("%i->Ap:%i|,", u, matrInodo[q].i_block[u]);
         }
     }
-/*
-    printf("\t................................Bloques:................................\n\t");
+    printf("\t\n................................Bloques:................................\n\t");
     //indos
     bloqueCarpeta carpeta;
     // blqcarp_escribir(sb.s_block_start, 1, partMontada.ruta, carpeta);
     int os;
-    for (os = 0; os < 10; os++) {
+    for (os = 0; os < 15; os++) {
         //void blqcarp_leer(int inicio, int n, char ruta[sizeChar], bloqueCarpeta *carpeta) 
         //blqcarp_leer(sb.s_block_start, os, mountNodo.mnt_ruta, carpeta);
         carpeta = blqcarp_leer(sb.s_block_start, os, mountNodo.mnt_ruta);
         int ku;
-        printf("Ap %i\n\t", os);
+        printf("\tAp %i\n", os);
         for (ku = 0; ku < 4; ku++) {
-            printf("|Nom: %s, Ind: %i|", carpeta.b_content[ku].b_name, carpeta.b_content[ku].b_inodo);
+            printf("\t|Nom: %s, Ind: %i|\n", carpeta.b_content[ku].b_name, carpeta.b_content[ku].b_inodo);
         }
+        puts("");
     }
-*/
-
     printf("\n");
+    printf("\t................................Journaling:................................\n\t");
+    //indos
+    journalie jourl[n * 3];
+    jr_leer(partMontada.part_inicio + partMontada.part_espacioEbr, n, partMontada.ruta, jourl);
+    q = 0;
+    for (q = 0; q < 10; q++) {
+        int u;
+        printf("\nJournal %i\n\t", q);
+        printf("Tipo:%c|Nombre: %s|Fecha: %s|Padre: %s\n", jourl[q].journal_tipo, jourl[q].journal_nombre, jourl[q].journal_fecha, jourl[q].Padre);
+
+    }
+
 }
 

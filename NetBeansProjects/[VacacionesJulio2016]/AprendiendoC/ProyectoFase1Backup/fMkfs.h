@@ -29,12 +29,16 @@ superBloque sb_retornar(char id[sizeChar]);
 
 //journalie
 void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]);
+void jr_leer(int inicio, int n, char ruta[sizeChar], journalie *aux);
+
 //bitmap de inodos
 void bmi_escribir(int inicio, int n, char ruta[sizeChar], bmInodo aux[]);
 void bmi_leer(int inicio, int n, char ruta[sizeChar], bmInodo *aux);
+int bmi_primerLibre(int n, bmInodo aux[]) ;
 //bit map de blouqes
 void bmb_escribir(int inicio, int n, char ruta[sizeChar], bmBloque aux[]);
 void bmb_leer(int inicio, int n, char ruta[sizeChar], bmBloque *aux);
+int bmb_primerLibre(int n, bmBloque aux[]);
 //INODOS
 void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux[]);
 void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux);
