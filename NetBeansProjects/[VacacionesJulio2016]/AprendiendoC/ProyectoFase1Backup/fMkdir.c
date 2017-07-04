@@ -169,7 +169,7 @@ void crearCarpetaEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     strcpy(Inodos[ sb.s_first_ino].i_atime, partMontada.part_time); //ultima fecha que se leyó el nodo sin modificarlo
     fechaActual(Inodos[ sb.s_first_ino].i_ctime);
     fechaActual(Inodos[ sb.s_first_ino].i_mtime);
-    Inodos[ sb.s_first_ino].i_type = 0; //0 si es carpeta
+    Inodos[ sb.s_first_ino].i_type = '0'; //0 si es carpeta
     Inodos[ sb.s_first_ino].i_block[0] = sb.s_first_blo; //a que bloque apunta? al primer bloque libre
     int lol;
     for (lol = 1; lol < 12; lol++) {

@@ -74,7 +74,7 @@ void fdisk(int size, char ruta[sizeChar], char name[sizeChar], char unit, char t
  **************************************************************/
 
 void errorDeEspacio() {
-    printf("[ERROR AL PARTICIONAR]El tamaño de la particion supera el espacio disponible\n");
+    printf("\t\t[ERROR AL PARTICIONAR]El tamaño de la particion supera el espacio disponible\n");
     fdisk_ocurrioError = true;
 }
 

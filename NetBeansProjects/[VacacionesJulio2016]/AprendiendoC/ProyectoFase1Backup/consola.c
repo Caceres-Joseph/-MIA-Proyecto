@@ -483,7 +483,7 @@ void inicializarVariablesMnt();
 
 void RKD();
 void FKD();
-void FKD2();
+
 void MNT();
 void MKFIL();
 void MKDIR();
@@ -647,6 +647,7 @@ void S() {
             if (!ocurrioError) {
 
                 fdisk(fdisk_size, fdisk_path, fdisk_name, fdisk_unit, fdisk_type, fdisk_fit, fdisk_delete, fdisk_add);
+                
 
             }
             inicializarVariablesFdisk();
@@ -717,8 +718,16 @@ void S() {
 
         } else if (strcmpi("exit", tok.valor)) {
             abort();
+        } else if (strcmpi("clear", tok.valor)) {
+            char dan[sizeChar]="clear && printf 'ze[3J'";
+            
+            dan[17]=92;
+            
+            //printf("Char %s\n",dan);//17
+            system("clear");
         } else if (strcmpi("exec", tok.valor)) {
             token tok = pop(listaDeTokens); //loque viene es la cadean
+            
 
             exec(tok.valor); //viene la ruta
 
@@ -1046,179 +1055,6 @@ void FKD() {
         token cad = pop(listaDeTokens);
         if (strcmpi("cadena", cad.tipo)) {
             strcpy(fdisk_path, cad.valor);
-            FKD2();
-            return;
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("size", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("numero", cad.tipo)) {
-            int numero;
-            sscanf(cad.valor, "%i", &numero);
-            if (numero > 0) {
-
-                fdisk_size = numero;
-                FKD2();
-                return;
-            } else {
-                errorSemantico("Size debe de ser mayor a cero");
-            }
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("name", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("id", cad.tipo)) {
-            strcpy(fdisk_name, cad.valor);
-            FKD2();
-            return;
-        } else if (strcmpi("letras", cad.tipo)) {
-            strcpy(fdisk_name, cad.valor);
-            FKD2();
-            return;
-        } else if (strcmpi("cadena", cad.tipo)) {
-            strcpy(fdisk_name, cad.valor);
-            FKD2();
-            return;
-        } else {
-            errorSintactico();
-        }
-
-    } else if (strcmpi("unit", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("letras", cad.tipo)) {
-
-            char aux = cad.valor[0]; //el primer elemento
-            aux = tolower(aux);
-            //strncmp(string1, string2, sizeChar);
-            if (aux == 'b') {
-                fdisk_unit = aux;
-                FKD2();
-                return;
-            } else if (aux == 'k') {
-                fdisk_unit = aux;
-                FKD2();
-                return;
-            } else if (aux == 'm') {
-                fdisk_unit = aux;
-                FKD2();
-                return;
-            } else {
-                errorSemantico("Ingrese una unidad correcta");
-            }
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("type", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("letras", cad.tipo)) {
-            char aux = cad.valor[0]; //el primer elemento
-            aux = tolower(aux);
-            //strncmp(string1, string2, sizeChar);
-            if (aux == 'p') {
-                fdisk_type = aux;
-                FKD2();
-                return;
-            } else if (aux == 'e') {
-                fdisk_type = aux;
-                FKD2();
-                return;
-            } else if (aux == 'l') {
-                fdisk_type = aux;
-                FKD2();
-                return;
-            } else {
-                errorSemantico("Ingrese un tipo de partición correcto");
-            }
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("fit", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("letras", cad.tipo)) {
-
-            if (strcmpi("bf", cad.valor)) {
-                strcpy(fdisk_fit, cad.valor);
-                FKD2();
-                return;
-            } else if (strcmpi("ff", cad.valor)) {
-                strcpy(fdisk_fit, cad.valor);
-                FKD2();
-                return;
-            } else if (strcmpi("wf", cad.valor)) {
-                strcpy(fdisk_fit, cad.valor);
-                FKD2();
-                return;
-            } else {
-                errorSemantico("Ingrese un ajuste correcto");
-            }
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("delete", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("letras", cad.tipo)) {
-            if (strcmpi("fast", cad.valor)) {
-                strcpy(fdisk_delete, cad.valor);
-                FKD2();
-                return;
-            } else if (strcmpi("full", cad.valor)) {
-                strcpy(fdisk_delete, cad.valor);
-                FKD2();
-                return;
-            } else {
-                errorSemantico("Ingrese un parámetro correcto");
-            }
-        } else {
-            errorSintactico();
-        }
-    } else if (strcmpi("add", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("negativo", cad.tipo)) {
-            int numero;
-            sscanf(cad.valor, "%i", &numero);
-            fdisk_add = numero;
-            FKD2();
-            return;
-        } else if (strcmpi("numero", cad.tipo)) {
-            int numero;
-            sscanf(cad.valor, "%i", &numero);
-            fdisk_add = numero;
-            FKD2();
-            return;
-        } else {
-            errorSintactico();
-        }
-    } else {
-        //aquí se acepta
-    }
-}
-
-void FKD2() {
-    pop(listaDeTokens); //$
-    token tok = pop(listaDeTokens); //path
-    toMinusc(tok.valor);
-    if (strcmpi("path", tok.valor)) {
-        pop(listaDeTokens); //=
-        pop(listaDeTokens); //>
-        token cad = pop(listaDeTokens);
-        if (strcmpi("cadena", cad.tipo)) {
-            strcpy(fdisk_path, cad.valor);
             FKD();
             return;
         } else {
@@ -1239,7 +1075,6 @@ void FKD2() {
             } else {
                 errorSemantico("Size debe de ser mayor a cero");
             }
-            strcpy(rmkdisk_ruta, cad.valor);
         } else {
             errorSintactico();
         }
@@ -1262,6 +1097,7 @@ void FKD2() {
         } else {
             errorSintactico();
         }
+
     } else if (strcmpi("unit", tok.valor)) {
         pop(listaDeTokens); //=
         pop(listaDeTokens); //>
@@ -1289,7 +1125,7 @@ void FKD2() {
         } else {
             errorSintactico();
         }
-    } else if (strcmpi("type", tok.valor)) {
+    } else if ((strcmpi("type", tok.valor))||(strcmpi("tipo", tok.valor))) {
         pop(listaDeTokens); //=
         pop(listaDeTokens); //>
         token cad = pop(listaDeTokens);
@@ -1381,6 +1217,8 @@ void FKD2() {
         //aquí se acepta
     }
 }
+
+
 
 void MKD(int tama, char ruta[sizeChar], char disco[sizeChar]) {
     token to = pop(listaDeTokens);

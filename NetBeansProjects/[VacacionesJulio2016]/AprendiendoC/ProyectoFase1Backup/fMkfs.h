@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "estructuras.h"
 
-void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion);
+void crear_ext3( int n, char id[sizeChar]);
 
 void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add);
 

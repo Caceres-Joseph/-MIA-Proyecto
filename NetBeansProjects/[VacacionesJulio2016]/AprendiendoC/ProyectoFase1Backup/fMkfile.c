@@ -29,11 +29,12 @@ void mkfile(char id[sizeChar], char ruta[sizeChar], char p, int size, char count
 void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[sizeChar]) {
 
 
-    //primor hay que buscar el directorio haciendo split
+    //primero hay que buscar el directorio haciendo split
     char buffer[sizeChar] = "";
     //char concat=
     int i;
     int indiceInodo = 0;
+    int indTemp;
     for (i = 0; ruta[i] != '\0'; i++) {
         if (ruta[i] == '/') {
             //printf("\n\tDirectorio= %s", buffer);
@@ -43,15 +44,11 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
                 indiceInodo = 0;
             } else {
                 printf("\t\t----Buscando %s en Inodo-%i-----\n", buffer, indiceInodo);
-                int indTemp = indiceInodoCarpetaEnApuntadorDirecto(id, indiceInodo, buffer);
-                if (indTemp == -1) {//hay que hacer la carpeta
-                    printf("\t\t Creando el archivo en el inodo %i\n", indiceInodo);
-                    //crearCarpetaEnInodo(id, indiceInodo, buffer, size); 
-                    //return;
-                    crearArchivoEnInodo(id, indiceInodo, buffer, size);
-                } else {
-                    indiceInodo = indTemp; //me pasa el siguiente nodo 
-                }
+                indTemp = indiceInodoCarpetaEnApuntadorDirecto(id, indiceInodo, buffer);
+                printf("El indice inodo temporal es = %i\n", indTemp);
+
+                indiceInodo = indTemp; //me pasa el siguiente nodo 
+
             }
             memset(buffer, 0, sizeChar);
 
@@ -64,12 +61,22 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
             buffer[o] = ruta[i];
         }
     }
+    //aqui salgo del for y debo de insertar el archivo dentro del inodo de la carpeta
+
+    
+    printf("$$IndTem es %i\n", indTemp);
+    printf("$$Indice Inodo es = %i\n", indiceInodo);
+    printf("$$Buffer %s\n", buffer);
+    printf("$$Size %i\n", size);
+    crearArchivoEnInodo(id, indiceInodo, buffer, size);
+    
+    
 }
 
 void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombreCarpeta[sizeChar], int size) {
-    if(size==0){
+    if (size == 0) {
         printf("size es igual a cero\n");
-        size= 64;
+        size = 64;
     }
     //primero tengo que obtener el super bloque
     superBloque sb = sb_retornar(id);
@@ -132,7 +139,13 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
             }
         }
     }
-
+    printf("el puntero libre es el %i\n", punteroLibre);
+    //tengo que definir cuantos bloques son los que voy a utilizar men.
+    double residuo = size%64; //el tamaño es la cantidad de char a usar y cada bloque es de 64 bytes
+    int numBloques= size/64+(int)residuo;
+    printf("El numero de bloques a utilizar es de : %i\n",numBloques );
+    
+    
     if (punteroLibre != 0) {//Hay que crear un nuevo bloque en el puntero e inicializarlo con -1's
         //aquí se ocupa dos bloques
         content contenido;
@@ -162,7 +175,7 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     strcpy(Inodos[ sb.s_first_ino].i_atime, partMontada.part_time); //ultima fecha que se leyó el nodo sin modificarlo
     fechaActual(Inodos[ sb.s_first_ino].i_ctime);
     fechaActual(Inodos[ sb.s_first_ino].i_mtime);
-    Inodos[ sb.s_first_ino].i_type = 1; //0 si es carpeta
+    Inodos[ sb.s_first_ino].i_type = '1'; //0 si es carpeta
 
 
     //////////////////////////////////////////[Los nuevos bloques ]//
@@ -181,7 +194,7 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
             block.b_content[i] = (char) i;
         }
 
-       //blqArch_escribir(sb.s_block_start, sb.s_first_blo, partMontada.ruta, block); //escribo el bloque
+        //blqArch_escribir(sb.s_block_start, sb.s_first_blo, partMontada.ruta, block); //escribo el bloque
         Inodos[ sb.s_first_ino].i_block[cantBlo] = sb.s_first_blo; //los apuntdores al bloque
         bm_Bloques[sb.s_first_blo].status = '1';
         sb.s_first_blo = bmb_primerLibre(n, bm_Bloques);
@@ -206,7 +219,7 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     journ.journal_tipo = '0';
     jour[sb.s_bjpurfree] = journ;
     jr_escribir(partMontada.part_inicio + partMontada.part_espacioEbr + sizeof (journalie), n, partMontada.ruta, jour);
-
+    puts("Aqui no entra men");
     //////////////////////////////////////////[SuperBloque]//
     sb.s_first_ino = bmi_primerLibre(n, bm_Inodos);
     sb.s_bjpurfree++;
@@ -271,7 +284,7 @@ void crearHome(char id[sizeChar]) {
     strcpy(Inodos[1].i_atime, partMontada.part_time); //ultima fecha que se leyó el nodo sin modificarlo
     fechaActual(Inodos[1].i_ctime);
     fechaActual(Inodos[1].i_mtime);
-    Inodos[0].i_type = 0; //0 si es carpeta
+    Inodos[0].i_type = '0'; //0 si es carpeta
     Inodos[0].i_block[0] = 0; //apuntador primer bloque libre
     inodos_escribir(sb.s_inode_start, n, partMontada.ruta, Inodos); //escribiendo lo inodos
 
@@ -295,6 +308,7 @@ void crearHome(char id[sizeChar]) {
 void crearRoot(char id[sizeChar]) {
     //primero tengo que obtener el super bloque
     superBloque sb = sb_retornar(id);
+
     //mnt_nodo mountNodo = retornarNodoMount(id); //la particion que tiene los datos
     int n = sb.s_inodes_count;
     particionMontada partMontada = devolverParticionMontada(id);
@@ -327,11 +341,13 @@ void crearRoot(char id[sizeChar]) {
     sb_escribir(partMontada.ruta, partMontada.part_inicio + partMontada.part_espacioEbr, sb);
 
 
+
     /*
         sb.s_first_ino = sb.s_first_ino + sizeof (inodo);
         sb.s_first_blo = sb.s_first_blo + sizeof (bloqueCarpeta);
         sb.s_bjpurfree = sb.s_bjpurfree + sizeof (journalie);
      */
+
 
     //Modificar el bitmap de inodos.
     bm_Inodos[0].status = '1';
@@ -346,7 +362,7 @@ void crearRoot(char id[sizeChar]) {
     strcpy(Inodos[0].i_atime, partMontada.part_time); //ultima fecha que se leyó el nodo sin modificarlo
     fechaActual(Inodos[0].i_ctime);
     fechaActual(Inodos[0].i_mtime);
-    Inodos[0].i_type = 0; //0 si es carpeta
+    Inodos[0].i_type = '0'; //0 si es carpeta
     Inodos[0].i_block[0] = 0; //primer bloque libre
     int lol;
     for (lol = 1; lol < 12; lol++) {
@@ -355,6 +371,10 @@ void crearRoot(char id[sizeChar]) {
     //strcpy(Inodos[0].)
 
     inodos_escribir(sb.s_inode_start, n, partMontada.ruta, Inodos); //escribiendo lo inodos
+
+
+
+
 
     //Modificando los bloques
     content root;
@@ -382,12 +402,20 @@ void crearRoot(char id[sizeChar]) {
     strcpy(journ.journal_nombre, "/");
     journ.journal_tipo = '1';
     jour[0] = journ;
-    jr_escribir(partMontada.part_inicio + partMontada.part_espacioEbr + sizeof (journalie), n, partMontada.ruta, jour);
+
+    jr_escribir(partMontada.part_inicio + partMontada.part_espacioEbr + sizeof (superBloque), n, partMontada.ruta, jour);
+
+
+    superBloque sb2 = sb_retornar(id);
+
+
 
 };
 
 void insertarCarpeta(char id[sizeChar], char ruta[sizeChar]) {
     superBloque sb = sb_retornar(id);
+
+
     mnt_nodo mountNodo = retornarNodoMount(id); //la particion que tiene los datos
     int n = sb.s_inodes_count;
 

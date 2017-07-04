@@ -18,6 +18,7 @@
 
 void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
 
+     particionMontada partMontada = devolverParticionMontada(id);
     if (unit == ' ')//por si no viene unidad
         unit = 'k';
     int retorno = 1;
@@ -37,46 +38,45 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
     if (add != 0) {
         puts("\tAgregar o restar");
     } else {//formatear normal
-        mnt_nodo particion = retornarNodoMount(id);
-        int re = strncmp(particion.mnt_ruta, "", sizeChar);
-        if (re == 0)
-            return;
+        
 
-        ////////los datos necesarios
-        int part_inicio = 0;
-        int part_tamano = 0;
-        char part_colocacion = ' ';
-        int pimerEspacioEBR = 0;
-
-        if (particion.mnt_particion.part_fit == 'b' || particion.mnt_particion.part_fit == 'f' || particion.mnt_particion.part_fit == 'w') {//es primaria
-            part_inicio = particion.mnt_particion.part_start;
-            part_tamano = particion.mnt_particion.part_size;
-            part_colocacion = particion.mnt_particion.part_type;
-            pimerEspacioEBR = 0;
-        } else {//del ebr
-            part_inicio = particion.mnt_ebr.part_start;
-            part_tamano = particion.mnt_ebr.part_size;
-            part_colocacion = metodoDeColocacionExtendida;
-            pimerEspacioEBR = sizeof (bloqueEBR);
-        }
-
-        double partta = (double) part_tamano;
+        
         double nu;
-        nu = (partta - sizeof (superBloque)) / (4.0 + 3.0 * 64.0 + sizeof (inodo) + sizeof (journalie));
+        nu = (partMontada.part_tamano - sizeof (superBloque)) / (4.0 + 3.0 * 64.0 + sizeof (inodo) + sizeof (journalie));
         printf("\tSuperBloque=%i| Inodo = %i|Journalie=%i\n", sizeof (superBloque), sizeof (inodo), sizeof (journalie));
-        printf("\tTamaño de la partición=%i\n", part_tamano);
+        printf("\tTamaño de la partición=%i\n",partMontada.part_tamano);
         printf("\tN en double=%f\n", nu);
         int n = (int) nu;
         printf("\tN en entero = %i\n", n);
         int disk = sizeof (superBloque) + n + n * sizeof (journalie) + 3 * n + n * sizeof (inodo) + 3 * n * sizeof (bloqueCarpeta);
         printf("\tTamaño de formato es= %i\n", disk);
 
-        crear_ext3(particion, n, part_inicio + pimerEspacioEBR); //creando los sectores, super bloque, inodos
+        
+        crear_ext3( n,id); //creando los sectores, super bloque, inodos
 
         //luego tengo que crear la raíz por que si no voy a pisar
         printf("\tCreando la carpeta raíz\n");
         crearRoot(id);
+        
+        superBloque sb = sb_retornar(id);
+        
+        
+/*
+         superBloque sb = sb_retornar(id);
+
+    mnt_nodo mountNodo = retornarNodoMount(id);
+    //int n = sb.s_inodes_count;
+         bmInodo aule[n];
+        bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
+        int div = n / 4;
+        int p;
+        //fprintf(f, "BitMapInodos");
+        for (p = 0; p < n; p++) {
+            printf( "|%c", aule[p].status);
+        }
+        printf("\n");
         //crearHome(id); 
+*/
 
     }
 }
@@ -86,10 +86,12 @@ void mkfs(char id[sizeChar], char unit, char type[sizeChar], int add) {
  **************************************************************/
 
 
-void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
+void crear_ext3(int n, char id[sizeChar]) {
     //n=n-1;
-    superBloque sb = sb_inicializar(n, mountNodo.tiempo, inicioParticion);
-    sb_escribir(mountNodo.mnt_ruta, inicioParticion, sb); //Escribiendo el super bloque
+     particionMontada partMontada = devolverParticionMontada(id);
+     
+     superBloque sb = sb_inicializar(n, partMontada.part_time, partMontada.part_inicio+partMontada.part_espacioEbr);
+    sb_escribir(partMontada.ruta, partMontada.part_inicio+partMontada.part_espacioEbr, sb); //Escribiendo el super bloque
 
 
 
@@ -108,7 +110,8 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
         for (oiu = 0; oiu < 3*n; oiu++) {
             jr[oiu]= jrAux;
         }
-        jr_escribir(inicioParticion + sizeof (superBloque), n, mountNodo.mnt_ruta, jr);
+        jr_escribir(partMontada.part_inicio+partMontada.part_espacioEbr + sizeof (superBloque), n, partMontada.ruta, jr);
+        puts("Escribirendo en EXT3=================0");
 
     //Bitmap de bloques
     bmBloque agrregloBmb[n * 3];
@@ -118,7 +121,7 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
     for (u = 0; u < 3 * n; u++) {
         agrregloBmb[u] = bmb;
     }
-    bmb_escribir(sb.s_bm_block_start, n, mountNodo.mnt_ruta, agrregloBmb);
+    bmb_escribir(sb.s_bm_block_start, n, partMontada.ruta, agrregloBmb);
 
 
     //Bit map de inodos
@@ -129,7 +132,7 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
     for (l = 0; l < n; l++) {
         bmi[l] = bm;
     }
-    bmi_escribir(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, bmi);
+    bmi_escribir(sb.s_bm_inode_start, n, partMontada.ruta, bmi);
 
 
 
@@ -148,7 +151,7 @@ void crear_ext3(mnt_nodo mountNodo, int n, int inicioParticion) {
         agrregloInodo[t] = ino;
     }
     printf("");
-    inodos_escribir(sb.s_inode_start, n, mountNodo.mnt_ruta, agrregloInodo);
+    inodos_escribir(sb.s_inode_start, n, partMontada.ruta, agrregloInodo);
 }
 
 /**************************************************************
@@ -336,9 +339,10 @@ void jr_escribir(int inicio, int n, char ruta[sizeChar], journalie aux[]) {
         printf("\t[ERROR]error al abrir el disco!\n");
     } else {
         int j;
+        
         for (j = 0; j < 3 * n; j++) {
             fseek(f, inicio + j * (sizeof (journalie)), SEEK_SET);
-            fwrite(&aux[j], sizeof (journalie), 1, f);
+            //fwrite(&aux[j], sizeof (journalie), 1, f);
         }
         fclose(f);
     }

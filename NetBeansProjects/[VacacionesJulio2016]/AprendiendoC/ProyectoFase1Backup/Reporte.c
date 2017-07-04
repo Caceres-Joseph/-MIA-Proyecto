@@ -152,25 +152,7 @@ void reporteEXT(char id[sizeChar]) {
     bmInodo aule[n];
     bmi_leer(sb.s_bm_inode_start, n, mountNodo.mnt_ruta, aule);
     int p;
-    printf("\t.....................BitMap de inodos:................................\n\t");
-
-
-    for (p = 0; p < n; p++) {
-        printf("%c", aule[p].status);
-    }
-    printf("\n");
-    printf("\t....................BitMap de bloques:................................\n\t");
-    //bit map de bloques 
-    bmBloque matrBloque[3 * n];
-    bmb_leer(sb.s_bm_block_start, n, mountNodo.mnt_ruta, matrBloque);
-    int k;
-
-
-    for (k = 0; k < 3 * n; k++) {
-        printf("%c", matrBloque[k].status);
-    }
-    printf("\n");
-
+    
     printf("\t................................Inodos:................................\n\t");
     //indos
     inodo matrInodo[n];
