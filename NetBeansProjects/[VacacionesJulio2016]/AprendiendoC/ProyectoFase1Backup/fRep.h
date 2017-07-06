@@ -20,5 +20,15 @@ void rep(char id[sizeChar], char ruta[sizeChar], char name[sizeChar]);
 void reporteMbr(char id[sizeChar]);
 
 void exec(char ruta[sizeChar]);
+
+void reporteEbr(char id[sizeChar]);
+void reporteDisk(char id[sizeChar]);
+void superBloq(char id[sizeChar]);
+void reBmInodes(char id[sizeChar]);
+void reBmBloques(char id[sizeChar]);
+
+void arbol(char id[sizeChar]);
+void dibujarBloquesCarpetas(FILE* fe, int pos, superBloque sb, particionMontada partMontada, int apuntador);
+void dibujarBloquesArchivos(FILE* fe, int pos, superBloque sb, particionMontada partMontada, int apuntador);
 #endif /* FREP_H */
 

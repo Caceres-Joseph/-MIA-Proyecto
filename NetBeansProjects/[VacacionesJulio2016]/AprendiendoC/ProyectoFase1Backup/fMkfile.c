@@ -31,7 +31,6 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
 
     //primero hay que buscar el directorio haciendo split
     char buffer[sizeChar] = "";
-    //char concat=
     int i;
     int indiceInodo = 0;
     int indTemp;
@@ -45,10 +44,7 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
             } else {
                 printf("\t\t----Buscando %s en Inodo-%i-----\n", buffer, indiceInodo);
                 indTemp = indiceInodoCarpetaEnApuntadorDirecto(id, indiceInodo, buffer);
-                printf("El indice inodo temporal es = %i\n", indTemp);
-
                 indiceInodo = indTemp; //me pasa el siguiente nodo 
-
             }
             memset(buffer, 0, sizeChar);
 
@@ -62,15 +58,111 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
         }
     }
     //aqui salgo del for y debo de insertar el archivo dentro del inodo de la carpeta
+    /*
+        printf("$$IndTem es %i\n", indTemp);
+        printf("$$Indice Inodo es = %i\n", indiceInodo);
+        printf("$$Buffer %s\n", buffer);
+        printf("$$Size %i\n", size);
+     */
 
-    
-    printf("$$IndTem es %i\n", indTemp);
-    printf("$$Indice Inodo es = %i\n", indiceInodo);
-    printf("$$Buffer %s\n", buffer);
-    printf("$$Size %i\n", size);
-    crearArchivoEnInodo(id, indiceInodo, buffer, size);
-    
-    
+
+    //crearArchivoEnInodo(id, indiceInodo, buffer, size);
+    //
+    int numBlo = numeroDeBloques(size, count); //me retorna el numero de bloques que tengo que crear
+    bloqueArchivo arch[numBlo];
+    if (numBlo == 0)//Salgo 
+        return;
+    //printf("el numero de blques que hay que crear es de = %i\n", numBlo);
+    arrregloBloques(size, count, arch, numBlo);//ya me viene lleno el arreglo de boques
+}
+
+int numeroDeBloques(int size, char ruta[sizeChar]) {
+    //corroborando si tengo que leer una ruta
+    int retorno = 1;
+    if (size == 0) {//quiere decir que no mando el tamaño del size
+        //corroborando si mando ruta
+        if (strcmpi(ruta, "")) {//tampoco me mandaron la ruta
+            return 1;
+        } else {//tengo que leer un archivo dentro de la computadora
+            FILE *ptr_file;
+            if ((ptr_file = fopen(ruta, "r")) == NULL) {
+                printf("\t[ERROR]Error al leer el archivo, asegurese de que este exista!\n");
+                return 0;
+            } else {
+                //Primero lo voy a concatenar completo
+                char dat[768]; //es lo maximo que puedo guardar con los apuntadores directos
+                char buf[200];
+                int i = 0;
+                memset(dat, 0, 768);
+                while (fgets(buf, 200, ptr_file) != NULL) {
+                    strcat(dat, buf);
+                }
+                fclose(ptr_file);
+
+                for (i = 0; dat[i] != '\0'; i++) {
+                }
+                //la i es igual al size
+                int residuo = i % 64; //el tamaño es la cantidad de char a usar y cada bloque es de 64 bytes
+                if (residuo > 0)
+                    residuo = 1;
+
+                int numBloques = (i / 64) + residuo;
+                return numBloques;
+            }
+        }
+    } else {
+        int residuo = size % 64; //el tamaño es la cantidad de char a usar y cada bloque es de 64 bytes
+        if (residuo > 0)
+            residuo = 1;
+        int numBloques = (size / 64) + residuo;
+        return numBloques;
+    }
+    return retorno;
+}
+
+void arrregloBloques(int size, char ruta[sizeChar], bloqueArchivo *bloque, int n) {
+    //corroborando si tengo que leer una ruta
+    if (size == 0) {//quiere decir que no mando el tamaño del size
+        //corroborando si mando ruta
+        if (strcmpi(ruta, "")) {//tampoco me mandaron la ruta
+            strcpy(bloque[0].b_content, "--Sin Contenido, ni tamaño--");
+        } else {//tengo que leer un archivo dentro de la computadora
+            FILE *ptr_file;
+            if ((ptr_file = fopen(ruta, "r")) == NULL) {
+                printf("\t[ERROR]Error al leer el archivo, asegurese de que este exista!\n");
+
+            } else {
+                //Primero lo voy a concatenar completo
+                char dat[768]; //es lo maximo que puedo guardar con los apuntadores directos
+                char buf[200];
+                int i = 0;
+                memset(dat, 0, 768);
+                while (fgets(buf, 200, ptr_file) != NULL) {
+                    strcat(dat, buf);
+                }
+                fclose(ptr_file);
+                
+                int lol;
+                int acumula=0;
+                for (lol = 1; lol < n + 1; lol++) {//aquí lleno los bloques del archivo
+                    //LLenando el bloque archivo
+                    bloqueArchivo arch;
+                    memset(arch.b_content, 0, 64);
+                    for (i = 0; (dat[acumula] != '\0')&&(i < 64); i++) {
+                        arch.b_content[i]=dat[acumula];
+                        acumula++;
+                    }
+                    bloque[lol] = arch;
+                    //ahora lo tengo que agregar al arreglo de bloques
+                }
+            }
+
+        }
+    } else {//aqui tengo que llnar bloques del tamaño que se me solicita
+
+    }
+
+
 }
 
 void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombreCarpeta[sizeChar], int size) {
@@ -111,8 +203,6 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     //Inodos
     //Blouqes
 
-
-
     //////////////////////////////////////////[Modificando el inodo y el Bloque anterior]
 
     int ind;
@@ -141,12 +231,15 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     }
     printf("el puntero libre es el %i\n", punteroLibre);
     //tengo que definir cuantos bloques son los que voy a utilizar men.
-    double residuo = size%64; //el tamaño es la cantidad de char a usar y cada bloque es de 64 bytes
-    int numBloques= size/64+(int)residuo;
-    printf("El numero de bloques a utilizar es de : %i\n",numBloques );
-    
-    
-    if (punteroLibre != 0) {//Hay que crear un nuevo bloque en el puntero e inicializarlo con -1's
+    int residuo = size % 64; //el tamaño es la cantidad de char a usar y cada bloque es de 64 bytes
+    if (residuo > 0) {
+        residuo = 1;
+    }
+    int numBloques = size / 64 + residuo;
+    printf("El numero de bloques a utilizar es de : %i\n", numBloques);
+
+
+    if (punteroLibre != 0) { //Hay que crear un nuevo bloque en el puntero e inicializarlo con -1's
         //aquí se ocupa dos bloques
         content contenido;
         contenido.b_inodo = sb.s_first_ino;
@@ -170,42 +263,36 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     }
     //////////////////////////////////////////[Modificando el nuevo inodo]//
 
-    printf("\tEl primer inodo libre es = %i\n", sb.s_first_ino);
+
     Inodos[sb.s_first_ino].i_size = size; //el tamaño del archivo
     strcpy(Inodos[ sb.s_first_ino].i_atime, partMontada.part_time); //ultima fecha que se leyó el nodo sin modificarlo
     fechaActual(Inodos[ sb.s_first_ino].i_ctime);
     fechaActual(Inodos[ sb.s_first_ino].i_mtime);
-    Inodos[ sb.s_first_ino].i_type = '1'; //0 si es carpeta
+    Inodos[ sb.s_first_ino].i_type = '1'; //0 si es carpeta, 1 si es archivo wey
 
+    //Colocando el nombre en el 
 
-    //////////////////////////////////////////[Los nuevos bloques ]//
-    int cantidadDeBlouqes = size / 64;
-    int cantBlo;
-    for (cantBlo = 0; cantBlo < cantidadDeBlouqes; cantBlo++) {
-        if (cantBlo > 12) {
-            printf("\tPasando a apuntadores indirectos\n");
-            //SOBREPASA EL BLOQUE DE APUNTADORES INDIRECTOS
-            break;
-        }
-        bloqueArchivo block;
+    int lol;
 
-        int i;
-        for (i = 0; i < 64; i++) {
-            block.b_content[i] = (char) i;
-        }
+    for (lol = 0; lol < numBloques; lol++) {//aquí lleno los bloques del archivo
+        //LLenando el bloque archivo
+        bloqueArchivo arch;
+        strcpy(arch.b_content, "adfdsfsdfsdfsdfsdfsdfdsfsdfsdfsdfsdfsdfsdf");
+        blqArch_escribir(sb.s_block_start, sb.s_first_blo, partMontada.ruta, arch);
 
-        //blqArch_escribir(sb.s_block_start, sb.s_first_blo, partMontada.ruta, block); //escribo el bloque
-        Inodos[ sb.s_first_ino].i_block[cantBlo] = sb.s_first_blo; //los apuntdores al bloque
-        bm_Bloques[sb.s_first_blo].status = '1';
-        sb.s_first_blo = bmb_primerLibre(n, bm_Bloques);
         sb.s_free_blocks_counts--;
+        Inodos[ sb.s_first_ino].i_block[lol] = sb.s_first_blo; //a que bloque apunta? al primer bloque libre
+        bm_Bloques[sb.s_first_blo].status = '1';
+        bmb_escribir(sb.s_bm_block_start, n, partMontada.ruta, bm_Bloques);
+        sb.s_first_blo = bmb_primerLibre(n, bm_Bloques);
+        //Modificando el bitmap de bloques.
     }
+    //llenando el resto de apuntadores sobrantes
 
-    //////////////////////////////////////////[BitMapDeBloques]//
-
-    bmb_escribir(sb.s_bm_block_start, n, partMontada.ruta, bm_Bloques);
+    for (lol = numBloques; lol < 12; lol++) {
+        Inodos[sb.s_first_ino].i_block[lol] = -1;
+    }
     inodos_escribir(sb.s_inode_start, n, partMontada.ruta, Inodos); //escribiendo los inodos
-
 
     //////////////////////////////////////////[BitMapDeInodos]//
     bm_Inodos[sb.s_first_ino].status = '1';
@@ -219,15 +306,14 @@ void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombr
     journ.journal_tipo = '0';
     jour[sb.s_bjpurfree] = journ;
     jr_escribir(partMontada.part_inicio + partMontada.part_espacioEbr + sizeof (journalie), n, partMontada.ruta, jour);
-    puts("Aqui no entra men");
+
     //////////////////////////////////////////[SuperBloque]//
     sb.s_first_ino = bmi_primerLibre(n, bm_Inodos);
     sb.s_bjpurfree++;
-    sb.s_first_blo = bmb_primerLibre(n, bm_Bloques);
+
 
     sb.s_free_inodes_count--;
     sb_escribir(partMontada.ruta, partMontada.part_inicio + partMontada.part_espacioEbr, sb);
-
 }
 
 /**************************************************************

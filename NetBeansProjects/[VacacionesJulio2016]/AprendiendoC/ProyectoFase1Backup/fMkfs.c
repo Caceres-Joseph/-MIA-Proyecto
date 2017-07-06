@@ -408,17 +408,6 @@ void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carp
         fclose(f);
     }
 }
-void blqArch_escribir(int inicio, int n, char ruta[sizeChar], bloqueArchivo archivo) {
-    FILE *f;
-    if ((f = fopen(ruta, "r+b")) == NULL) {
-        printf("\t[ERROR]error al abrir el disco!\n");
-    } else {
-        //la n que recibo es la posicion del bloque.
-        fseek(f, inicio + n * (sizeof (bloqueArchivo)), SEEK_SET);
-        fwrite(&archivo, sizeof (bloqueArchivo), 1, f); //insertando la carpeta;
-        fclose(f);
-    }
-}
 
 bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]) {
     FILE *f;
@@ -432,4 +421,34 @@ bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]) {
         fclose(f);
     }
     return carpeta;
+}
+/**************************************************************
+ * Archivos                                                 *** 
+ **************************************************************/
+
+void blqArch_escribir(int inicio, int n, char ruta[sizeChar], bloqueArchivo archivo) {
+    FILE *f;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        //la n que recibo es la posicion del bloque.
+        fseek(f, inicio + n * (sizeof (bloqueArchivo)), SEEK_SET);
+        fwrite(&archivo, sizeof (bloqueArchivo), 1, f); //insertando el bloque archivo;
+        fclose(f);
+    }
+}
+
+
+bloqueArchivo blqArch_leer(int inicio, int n, char ruta[sizeChar]) {
+    FILE *f;
+    bloqueArchivo archivo;
+    if ((f = fopen(ruta, "r+b")) == NULL) {
+        printf("\t[ERROR]error al abrir el disco!\n");
+    } else {
+        //la n que recibo es la posicion del bloque.
+        fseek(f, inicio + n * (sizeof (bloqueArchivo)), SEEK_SET);
+        fread(&archivo, sizeof (bloqueArchivo), 1, f); //retornando el archivo;
+        fclose(f);
+    }
+    return archivo;
 }

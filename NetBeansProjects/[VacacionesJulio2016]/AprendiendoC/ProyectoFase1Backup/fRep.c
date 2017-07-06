@@ -19,15 +19,6 @@
 #include "Mbr.h"
 
 
-///void reporteEbr(char id[sizeChar]) 
-
-void reporteEbr(char id[sizeChar]);
-void reporteDisk(char id[sizeChar]);
-void superBloq(char id[sizeChar]);
-void reBmInodes(char id[sizeChar]);
-void reBmBloques(char id[sizeChar]);
-void arbol(char id[sizeChar]);
-void dibujarBloquesCarpetas(FILE* fe, int pos, superBloque sb, particionMontada partMontada, int apuntador);
 
 void exec(char ruta[sizeChar]) {
     //printf("la ruta es : %s\n", ruta);
@@ -136,8 +127,6 @@ void arbol(char id[sizeChar]) {
                 fprintf(fe, "\t};\n");
 
                 int i;
-
-
                 if (aux.i_type == '0') {//El inodo es de tipo carpeta
                     for (i = 0; i < 12; i++) {
                         int apunta = aux.i_block[i];
@@ -147,25 +136,16 @@ void arbol(char id[sizeChar]) {
                         }
                     }
                 } else {//el inodo es contenido
-
-                }
-
-
-            }
-        }
-
-        /*
-                int q = 0;
-                for (q = 0; q < n * 3; q++) {
-                    if (bm_Bloques[q].status == '1') {//dibujando el bloque; 
-                        fprintf(fe, "\t{\n");
-                        fprintf(fe, "\tB%i[label=\"{", q);
-                        fprintf(fe, "B%i|", q);
-                        fprintf(fe, "}\"];\n");
-                        fprintf(fe, "\t};\n");
+                    for (i = 0; i < 12; i++) {
+                        int apunta = aux.i_block[i];
+                        if (apunta != -1) {//hay que hacer su relación
+                            fprintf(fe, "\tI%i:N%i->B%i;\n", aux.i_uid, i, apunta);
+                            dibujarBloquesArchivos(fe, apunta, sb, partMontada, i); //lo busco dentro de los bloques carpetas
+                        }
                     }
                 }
-         */
+            }
+        }
         fprintf(fe, "}\n");
         fclose(fe);
         system("dot -Tpng -o /home/joseph/Documentos/arbol.png /home/joseph/Documentos/arbol.dot");
@@ -176,30 +156,27 @@ void dibujarBloquesCarpetas(FILE* fe, int pos, superBloque sb, particionMontada 
     //recuperando el bloque carpeta
     bloqueCarpeta carpeta1 = blqcarp_leer(sb.s_block_start, pos, partMontada.ruta);
 
-
-
-
     if (apuntador == 0) {//el primer apuntador trae los dos primero como nombres
-        
+
         content content1 = carpeta1.b_content[2];
         content content2 = carpeta1.b_content[3];
-        
-        
+
+
         fprintf(fe, "\t{\n");
         fprintf(fe, "\tB%i[label=\"", pos); //indica el bloque
         fprintf(fe, "B%i|Padre=%s|Nombre=%s", pos, carpeta1.b_content[0].b_name, carpeta1.b_content[1].b_name);
-        
+
         if (content1.b_inodo == -1 && content2.b_inodo == -1) {
             fprintf(fe, "\",color=white,fillcolor=\"#186A3B\", fontcolor=white];\n");
             fprintf(fe, "\t};\n");
             return;
         }
-        
+
         if (content1.b_inodo == -1 && content2.b_inodo != 1) {
             fprintf(fe, "|{%s|<N3>%i}", content2.b_name, content2.b_inodo);
             fprintf(fe, "\",color=white,fillcolor=\"#186A3B\",fontcolor=white];\n");
             fprintf(fe, "\t};\n");
-            
+
             fprintf(fe, "\tB%i:N3->I%i;\n", pos, content2.b_inodo);
 
         } else if (content1.b_inodo != -1 && content2.b_inodo == -1) {
@@ -217,7 +194,7 @@ void dibujarBloquesCarpetas(FILE* fe, int pos, superBloque sb, particionMontada 
     } else {
         fprintf(fe, "\t{\n");
         fprintf(fe, "\tB%i[label=\"", pos); //indica el bloque
-        
+
         fprintf(fe, "B%i", pos);
 
         int i;
@@ -236,22 +213,28 @@ void dibujarBloquesCarpetas(FILE* fe, int pos, superBloque sb, particionMontada 
             }
         }
     }
+}
 
-    puts("========================[Bloques Carpetas ]========================");
-
-    /*
-        int i;
-        for (i = 0; i < 4; i++) {
-            printf("Name=%s|Inodo=%i\n", carpeta1.b_content[i].b_name, carpeta1.b_content[i].b_inodo);
-        }
-     */
-
-    /*
+void dibujarBloquesArchivos(FILE* fe, int pos, superBloque sb, particionMontada partMontada, int apuntador) {
+    //recuperando el bloque carpeta
     
-        fprintf(fe, "B%i|", i);
-        fprintf(fe, "}\"];\n");
-        fprintf(fe, "\t};\n");
-     */
+    bloqueArchivo archivo = blqArch_leer(sb.s_block_start, pos, partMontada.ruta); //Obteniendo el archivo
+
+
+    fprintf(fe, "\t{\n");
+    fprintf(fe, "\tB%i[label=\"", pos); //indica el bloque
+
+    fprintf(fe, "B%i", pos);
+
+    fprintf(fe, "|%s", archivo.b_content);
+    
+/*
+    fprintf(fe, "\",color=white,fillcolor=\"#186A3B\",fontcolor=white];\n");
+*/
+    fprintf(fe, "\",color=white,fillcolor=yellow,fontcolor=black];\n");
+    fprintf(fe, "\t};\n");
+   
+
 }
 
 void reBmInodes(char id[sizeChar]) {

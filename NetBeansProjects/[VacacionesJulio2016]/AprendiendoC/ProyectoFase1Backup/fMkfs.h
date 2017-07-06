@@ -43,10 +43,11 @@ int bmb_primerLibre(int n, bmBloque aux[]);
 void inodos_escribir(int inicio, int n, char ruta[sizeChar], inodo aux[]);
 void inodos_leer(int inicio, int n, char ruta[sizeChar], inodo *aux);
 
-//Bloques 
-//carpetas
+//Bloques Carpeta
 void blqcarp_escribir(int inicio, int n, char ruta[sizeChar], bloqueCarpeta carpeta) ;
-//void blqcarp_leer(int inicio, int n, char ruta[sizeChar], bloqueCarpeta *carpeta);
 bloqueCarpeta blqcarp_leer(int inicio, int n, char ruta[sizeChar]);
-#endif /* FMKFS_H */
 
+//Bloque archivo
+void blqArch_escribir(int inicio, int n, char ruta[sizeChar], bloqueArchivo archivo);
+bloqueArchivo blqArch_leer(int inicio, int n, char ruta[sizeChar]);
+#endif /* FMKFS_H */

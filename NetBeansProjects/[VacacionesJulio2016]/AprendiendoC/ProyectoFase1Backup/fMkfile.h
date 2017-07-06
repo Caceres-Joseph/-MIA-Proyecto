@@ -29,5 +29,8 @@ void insertarCarpeta(char id[sizeChar], char ruta[sizeChar]);
 
 void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[sizeChar]);
 void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombreCarpeta[sizeChar], int size) ;
+
+void arrregloBloques(int size, char ruta[sizeChar], bloqueArchivo *bloque, int n);
+int numeroDeBloques(int size, char ruta[sizeChar]) ;
 #endif /* FMKFILE_H */
 
