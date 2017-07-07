@@ -68,12 +68,25 @@ void crearArchivo(char id[sizeChar], char ruta[sizeChar], int size, char count[s
 
     //crearArchivoEnInodo(id, indiceInodo, buffer, size);
     //
+    
     int numBlo = numeroDeBloques(size, count); //me retorna el numero de bloques que tengo que crear
+    
     bloqueArchivo arch[numBlo];
     if (numBlo == 0)//Salgo 
         return;
     //printf("el numero de blques que hay que crear es de = %i\n", numBlo);
-    arrregloBloques(size, count, arch, numBlo);//ya me viene lleno el arreglo de boques
+    printf("numero de Bloques = %i\n",numBlo);
+    numBlo= arrregloBloques(size, count, arch, numBlo);//ya me viene lleno el arreglo de boques
+   
+    
+/*
+    printf("numero de Bloques = %i\n",numBlo);
+    puts("====Contenido de los bloques ============");
+    for (i = 0; i < numBlo; i++) {
+        puts("-----------");
+        printf("%s\n",arch[i].b_content);
+    }
+*/
 }
 
 int numeroDeBloques(int size, char ruta[sizeChar]) {
@@ -120,8 +133,9 @@ int numeroDeBloques(int size, char ruta[sizeChar]) {
     return retorno;
 }
 
-void arrregloBloques(int size, char ruta[sizeChar], bloqueArchivo *bloque, int n) {
+int arrregloBloques(int size, char ruta[sizeChar], bloqueArchivo *bloque, int n) {
     //corroborando si tengo que leer una ruta
+    //int retorno;
     if (size == 0) {//quiere decir que no mando el tamaño del size
         //corroborando si mando ruta
         if (strcmpi(ruta, "")) {//tampoco me mandaron la ruta
@@ -144,25 +158,29 @@ void arrregloBloques(int size, char ruta[sizeChar], bloqueArchivo *bloque, int n
                 
                 int lol;
                 int acumula=0;
-                for (lol = 1; lol < n + 1; lol++) {//aquí lleno los bloques del archivo
+                for (lol = 0; lol < n ; lol++) {//aquí lleno los bloques del archivo
+                    printf("----Insertando el nuevo bloque =  %i---- \n",lol);
                     //LLenando el bloque archivo
                     bloqueArchivo arch;
-                    memset(arch.b_content, 0, 64);
+                    memset(arch.b_content, 0, sizeof(64));
                     for (i = 0; (dat[acumula] != '\0')&&(i < 64); i++) {
+                        
                         arch.b_content[i]=dat[acumula];
+                        //printf("acumula= %i, y letra = %c\n", acumula, dat[acumula]);
                         acumula++;
                     }
+                    printf("la i dentro del for llego hasta = %i", i);//deberia de llegar a sesenta y cuatro
+                    printf("%s\n",arch.b_content);
                     bloque[lol] = arch;
                     //ahora lo tengo que agregar al arreglo de bloques
                 }
             }
-
         }
     } else {//aqui tengo que llnar bloques del tamaño que se me solicita
-
+        
     }
-
-
+    printf("El numero de bloques, que esta dentro de bloques es = %i\n",n);
+    return n;
 }
 
 void crearArchivoEnInodo(char id[sizeChar], int indiceInodoAInsertar, char nombreCarpeta[sizeChar], int size) {
